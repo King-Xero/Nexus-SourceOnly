@@ -19,6 +19,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/**
+	 * \brief Moves the character forward or backward, depending on axis value.
+	 * \param fAxisValue Value of the input axis.
+	 */
+	void MoveForward(float fAxisValue);
+
+	/**
+	 * \brief Moves the character left or right, depending on axis value.
+	 * \param fAxisValue Value of the input axis.
+	 */
+	void MoveRight(float fAxisValue);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -26,4 +38,15 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	
+	/**
+	 * \brief Name used for move forward input binding.
+	 */
+	FName kstrMoveForwardBinding = "MoveForward";
+
+	/**
+	 * \brief Name used for move right input binding.
+	 */
+	FName kstrMoveRightBinding = "MoveRight";
 };

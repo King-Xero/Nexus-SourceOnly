@@ -18,6 +18,24 @@ void ANexusCharacter::BeginPlay()
 	
 }
 
+/**
+ * \brief Moves the character forward or backward, depending on axis value.
+ * \param fAxisValue Value of the input axis.
+ */
+void ANexusCharacter::MoveForward(float fAxisValue)
+{
+	AddMovementInput(GetActorForwardVector(), fAxisValue);
+}
+
+/**
+ * \brief Moves the character left or right, depending on axis value.
+ * \param fAxisValue Value of the input axis.
+ */
+void ANexusCharacter::MoveRight(float fAxisValue)
+{
+	AddMovementInput(GetActorRightVector(), fAxisValue);
+}
+
 // Called every frame
 void ANexusCharacter::Tick(float DeltaTime)
 {
@@ -30,5 +48,6 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	PlayerInputComponent->BindAxis(kstrMoveForwardBinding, this, &ANexusCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(kstrMoveRightBinding, this, &ANexusCharacter::MoveRight);
 }
-
