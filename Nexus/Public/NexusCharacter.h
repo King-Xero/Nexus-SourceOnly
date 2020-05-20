@@ -90,4 +90,9 @@ private:
 	 * \brief Name used for crouch input binding.
 	 */
 	const FName CrouchBindingName = "Crouch";
+
+	/**
+	 * \brief Name used for jump input binding.
+	 */
+	const FName JumpBindingName = "Jump";
 };
