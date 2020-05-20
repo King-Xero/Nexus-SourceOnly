@@ -49,4 +49,14 @@ private:
 	 * \brief Name used for move right input binding.
 	 */
 	FName kstrMoveRightBinding = "MoveRight";
+
+	/**
+	 * \brief Name used for look up input binding.
+	 */
+	FName kstrLookUpBinding = "LookUp";
+
+	/**
+	 * \brief Name used for turn input binding.
+	 */
+	FName kstrTurnBinding = "Turn";
 };

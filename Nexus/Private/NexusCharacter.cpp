@@ -50,4 +50,7 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	PlayerInputComponent->BindAxis(kstrMoveForwardBinding, this, &ANexusCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(kstrMoveRightBinding, this, &ANexusCharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis(kstrLookUpBinding, this, &ANexusCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(kstrTurnBinding, this, &ANexusCharacter::AddControllerYawInput);
 }
