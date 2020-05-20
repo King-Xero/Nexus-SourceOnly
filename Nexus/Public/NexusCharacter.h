@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "NexusCharacter.generated.h"
 
+class UCameraComponent;
+class USpringArmComponent;
+
 UCLASS()
 class NEXUS_API ANexusCharacter : public ACharacter
 {
@@ -16,6 +19,16 @@ public:
 	ANexusCharacter();
 
 protected:
+
+	/**
+	 * \brief Third person camera component
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCameraComponent* CameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USpringArmComponent* SpringArmComponent;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
