@@ -26,6 +26,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComponent;
 
+	/**
+	 * \brief Component used to mount the camera.
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
 	
@@ -44,6 +47,16 @@ protected:
 	 */
 	void MoveRight(float fAxisValue);
 
+	/**
+	 * \brief Make the character crouch from standing
+	 */
+	void StartCrouch();
+
+	/**
+	 * \brief Make the character stand from crouching
+	 */
+	void EndCrouch();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -56,20 +69,25 @@ private:
 	/**
 	 * \brief Name used for move forward input binding.
 	 */
-	FName kstrMoveForwardBinding = "MoveForward";
+	const FName MoveForwardBindingName = "MoveForward";
 
 	/**
 	 * \brief Name used for move right input binding.
 	 */
-	FName kstrMoveRightBinding = "MoveRight";
+	const FName MoveRightBindingName = "MoveRight";
 
 	/**
 	 * \brief Name used for look up input binding.
 	 */
-	FName kstrLookUpBinding = "LookUp";
+	const FName LookUpBindingName = "LookUp";
 
 	/**
 	 * \brief Name used for turn input binding.
 	 */
-	FName kstrTurnBinding = "Turn";
+	const FName TurnBindingName = "Turn";
+
+	/**
+	 * \brief Name used for crouch input binding.
+	 */
+	const FName CrouchBindingName = "Crouch";
 };

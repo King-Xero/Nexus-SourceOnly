@@ -4,6 +4,7 @@
 #include "NexusCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -18,6 +19,9 @@ ANexusCharacter::ANexusCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+
+	// This must be set to allow the character to crouch.
+	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +49,22 @@ void ANexusCharacter::MoveRight(float fAxisValue)
 	AddMovementInput(GetActorRightVector(), fAxisValue);
 }
 
+/**
+ * \brief Make the character crouch from standing
+ */
+void ANexusCharacter::StartCrouch()
+{
+	Crouch();
+}
+
+/**
+ * \brief Make the character stand from crouching
+ */
+void ANexusCharacter::EndCrouch()
+{
+	UnCrouch();
+}
+
 // Called every frame
 void ANexusCharacter::Tick(float DeltaTime)
 {
@@ -57,9 +77,12 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(kstrMoveForwardBinding, this, &ANexusCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(kstrMoveRightBinding, this, &ANexusCharacter::MoveRight);
+	PlayerInputComponent->BindAxis(MoveForwardBindingName, this, &ANexusCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(MoveRightBindingName, this, &ANexusCharacter::MoveRight);
 
-	PlayerInputComponent->BindAxis(kstrLookUpBinding, this, &ANexusCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis(kstrTurnBinding, this, &ANexusCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis(LookUpBindingName, this, &ANexusCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TurnBindingName, this, &ANexusCharacter::AddControllerYawInput);
+
+	PlayerInputComponent->BindAction(CrouchBindingName, IE_Pressed, this, &ANexusCharacter::StartCrouch);
+	PlayerInputComponent->BindAction(CrouchBindingName, IE_Released, this, &ANexusCharacter::EndCrouch);
 }
