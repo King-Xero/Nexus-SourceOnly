@@ -64,6 +64,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/**
+	 * \brief Return characters eye location.
+	 * \return Eye location
+	 */
+	virtual FVector GetPawnViewLocation() const override;
+	
 private:
 	
 	/**

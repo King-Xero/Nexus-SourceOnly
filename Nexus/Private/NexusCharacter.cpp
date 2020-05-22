@@ -88,3 +88,14 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	
 	PlayerInputComponent->BindAction(JumpBindingName, IE_Pressed, this, &ANexusCharacter::Jump);
 }
+
+FVector ANexusCharacter::GetPawnViewLocation() const
+{
+	if (CameraComponent)
+	{
+		// View for character should be that of the 3rd person camera.
+		return CameraComponent->GetComponentLocation();
+	}
+
+	return Super::GetPawnViewLocation();
+}
