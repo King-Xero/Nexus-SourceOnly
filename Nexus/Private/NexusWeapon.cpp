@@ -4,6 +4,7 @@
 #include "NexusWeapon.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ANexusWeapon::ANexusWeapon()
@@ -43,6 +44,9 @@ void ANexusWeapon::Fire()
 		CollisionQueryParams.AddIgnoredActor(WeaponOwner); // Ignore collisions with the weapon owner.
 		CollisionQueryParams.AddIgnoredActor(this); // Ignore collisions with the weapon itself.
 		CollisionQueryParams.bTraceComplex = true; // Complex collision is more expensive, but we get exact location of where was hit.
+
+		// Bullet tracer target parameter.
+		FVector BulletTracerTarget = TraceEnd;
 		
 		FHitResult WeaponHitResult;		
 		// Trace the world between the start and end locations. Returns true if blocking hit.
@@ -50,11 +54,40 @@ void ANexusWeapon::Fire()
 		{
 			AActor* HitActor = WeaponHitResult.GetActor();
 
-			// Apply damage to the hit actor
+			// Apply damage to the hit actor.
 			UGameplayStatics::ApplyPointDamage(HitActor, WeaponDamage, ShotDirection, WeaponHitResult, WeaponOwner->GetInstigatorController(), this, DamageType);
+
+			// Spawn particle effect for impact.
+			if (ImpactVFX)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, WeaponHitResult.ImpactPoint, WeaponHitResult.Normal.Rotation());
+			}
+
+			// If the shot hit something, the bullet tracer target should be updated.
+			BulletTracerTarget = WeaponHitResult.ImpactPoint;
 		}
 		
 		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+
+		// Spawn particle effect for muzzle flash.
+		if (MuzzleVFX)
+		{
+			UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, MeshComponent, MuzzleSocketName);
+		}
+
+		// Spawn bullet tracer particle effect.
+		if (TracerVFX)
+		{
+			FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
+
+			UParticleSystemComponent* TracerComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerVFX, MuzzleLocation);
+
+			if (TracerComponent)
+			{
+				TracerComponent->SetVectorParameter(TracerTargetParameterName, BulletTracerTarget);
+			}
+		}
+		
 	}
 	
 }
