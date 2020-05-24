@@ -28,13 +28,13 @@ protected:
 	/**
 	 * \brief Range within which the weapon can hit a target.
 	 */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float WeaponRange = 10000;
 
 	/**
 	 * \brief The amount of damage this weapon deals.
 	 */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float WeaponDamage = 20.0f;
 	
 	/**
@@ -80,7 +80,7 @@ protected:
 	 * \brief Shoot the weapon
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void Fire();
+	virtual void Fire();
 
 public:	
 	// Called every frame
