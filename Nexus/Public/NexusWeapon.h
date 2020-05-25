@@ -62,10 +62,16 @@ protected:
 	UParticleSystem* MuzzleVFX;
 
 	/**
-	 * \brief Particle effect spawned at the weapon impact location when a target is hit.
+	 * \brief Particle effect spawned at the weapon impact location when something is hit.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	UParticleSystem* ImpactVFX;
+	UParticleSystem* DefaultImpactVFX;
+	
+	/**
+	 * \brief Particle effect spawned at the weapon impact location when a character is hit.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem* CharacterImpactVFX;
 
 	/**
 	 * \brief Particle effect spawned between the muzzle and shot target location the weapon is fired.

@@ -5,6 +5,8 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Nexus/Utils/NexusTypeDefinitions.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "Nexus/Utils/ConsoleVariables.h"
 #endif
@@ -47,23 +49,39 @@ void ANexusWeapon::Fire()
 		CollisionQueryParams.AddIgnoredActor(WeaponOwner); // Ignore collisions with the weapon owner.
 		CollisionQueryParams.AddIgnoredActor(this); // Ignore collisions with the weapon itself.
 		CollisionQueryParams.bTraceComplex = true; // Complex collision is more expensive, but we get exact location of where was hit.
+		CollisionQueryParams.bReturnPhysicalMaterial = true; // Ensure that the surface material is returned to check what body part was hit.
 
 		// Bullet tracer target parameter.
 		FVector BulletTracerTarget = TraceEnd;
 		
 		FHitResult WeaponHitResult;		
 		// Trace the world between the start and end locations. Returns true if blocking hit.
-		if(GetWorld()->LineTraceSingleByChannel(WeaponHitResult, EyeLocation, TraceEnd, ECC_Visibility))
+		if(GetWorld()->LineTraceSingleByChannel(WeaponHitResult, EyeLocation, TraceEnd, ECC_Visibility, CollisionQueryParams))
 		{
 			AActor* HitActor = WeaponHitResult.GetActor();
 
 			// Apply damage to the hit actor.
 			UGameplayStatics::ApplyPointDamage(HitActor, WeaponDamage, ShotDirection, WeaponHitResult, WeaponOwner->GetInstigatorController(), this, DamageType);
 
-			// Spawn particle effect for impact.
-			if (ImpactVFX)
+			// Set the impact vfx to be played, depending on the surface type that is hit.
+			UParticleSystem* SurfaceImpactVFX = nullptr;
+			EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(WeaponHitResult.PhysMaterial.Get());
+						
+			switch (SurfaceType)
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, WeaponHitResult.ImpactPoint, WeaponHitResult.Normal.Rotation());
+				case SURFACE_CHARACTER_HEAD:
+				case SURFACE_CHARACTER_BODY:
+				case SURFACE_CHARACTER_LIMBS:
+					SurfaceImpactVFX = CharacterImpactVFX;
+					break;
+				default:
+					SurfaceImpactVFX = DefaultImpactVFX;
+			}
+
+			// Spawn particle effect for impact.
+			if (SurfaceImpactVFX)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SurfaceImpactVFX, WeaponHitResult.ImpactPoint, WeaponHitResult.Normal.Rotation());
 			}
 
 			// If the shot hit something, the bullet tracer target should be updated.
