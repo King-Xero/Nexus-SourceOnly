@@ -31,6 +31,18 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
+
+	/**
+	 * \brief Field of view value for aiming down sights.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	float AimingFOV = 65.0f;
+
+	/**
+	 * \brief Speed of the aim down sight interpolation.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100))
+	float ADSInterpolationSpeed = 20.0f;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -48,14 +60,24 @@ protected:
 	void MoveRight(float fAxisValue);
 
 	/**
-	 * \brief Make the character crouch from standing
+	 * \brief Make the character crouch from standing.
 	 */
 	void StartCrouch();
 
 	/**
-	 * \brief Make the character stand from crouching
+	 * \brief Make the character stand from crouching.
 	 */
 	void EndCrouch();
+
+	/**
+	 * \brief Make the character start "aiming down sight".
+	 */
+	void StartADS();
+
+	/**
+	 * \brief Make the character stop "aiming down sight".
+	 */
+	void EndADS();
 
 public:	
 	// Called every frame
@@ -71,6 +93,22 @@ public:
 	virtual FVector GetPawnViewLocation() const override;
 	
 private:
+
+	/**
+	 * \brief Set the camera field of view to set aim zoom.
+	 * \param DeltaTime Time since last update.
+	 */
+	void SetAimDownSight(float DeltaTime);
+	
+	/**
+	 * \brief Default FOV value for the camera, cached on begin play.
+	 */
+	float DefaultFOV;
+
+	/**
+	 * \brief Used to toggle the ADS zoom.
+	 */
+	bool bShouldAimDownSight;
 	
 	/**
 	 * \brief Name used for move forward input binding.
@@ -101,4 +139,9 @@ private:
 	 * \brief Name used for jump input binding.
 	 */
 	const FName JumpBindingName = "Jump";
+
+	/**
+	 * \brief Name used for aiming input binding.
+	 */
+	const FName AimingBindingName = "AimDownSight";
 };

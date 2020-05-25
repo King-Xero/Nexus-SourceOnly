@@ -28,7 +28,9 @@ ANexusCharacter::ANexusCharacter()
 void ANexusCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// Cache FOV so that we can reset when we stop ADS.
+	DefaultFOV = CameraComponent->FieldOfView;
 }
 
 /**
@@ -65,11 +67,24 @@ void ANexusCharacter::EndCrouch()
 	UnCrouch();
 }
 
+void ANexusCharacter::StartADS()
+{
+	// "Zoom" the camera in.
+	bShouldAimDownSight = true;
+}
+
+void ANexusCharacter::EndADS()
+{
+	// "Zoom" the camera out.
+	bShouldAimDownSight = false;
+}
+
 // Called every frame
 void ANexusCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	SetAimDownSight(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -87,6 +102,9 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(CrouchBindingName, IE_Released, this, &ANexusCharacter::EndCrouch);
 	
 	PlayerInputComponent->BindAction(JumpBindingName, IE_Pressed, this, &ANexusCharacter::Jump);
+
+	PlayerInputComponent->BindAction(AimingBindingName, IE_Pressed, this, &ANexusCharacter::StartADS);
+	PlayerInputComponent->BindAction(AimingBindingName, IE_Released, this, &ANexusCharacter::EndADS);
 }
 
 FVector ANexusCharacter::GetPawnViewLocation() const
@@ -98,4 +116,15 @@ FVector ANexusCharacter::GetPawnViewLocation() const
 	}
 
 	return Super::GetPawnViewLocation();
+}
+
+void ANexusCharacter::SetAimDownSight(float DeltaTime)
+{
+	// Interpolate the aim down sight for a smooth aim in/out.
+	
+	const float TargetFOV = bShouldAimDownSight ? AimingFOV : DefaultFOV;
+
+	const float InterpolationFOV = FMath::FInterpTo(CameraComponent->FieldOfView, TargetFOV, DeltaTime, ADSInterpolationSpeed);
+
+	CameraComponent->SetFieldOfView(InterpolationFOV);
 }
