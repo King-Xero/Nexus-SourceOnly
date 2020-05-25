@@ -5,6 +5,9 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "Nexus/Utils/ConsoleVariables.h"
+#endif
 
 // Sets default values
 ANexusWeapon::ANexusWeapon()
@@ -66,8 +69,14 @@ void ANexusWeapon::Fire()
 			// If the shot hit something, the bullet tracer target should be updated.
 			BulletTracerTarget = WeaponHitResult.ImpactPoint;
 		}
-		
-		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+		bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
+		if (bDrawDebug)
+		{
+			DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+		}
+#endif
 
 		// Spawn particle effect for muzzle flash.
 		if (MuzzleVFX)

@@ -6,6 +6,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "Nexus/Utils/ConsoleVariables.h"
+#endif
 
 // Sets default values
 AGrenadeLauncherProjectile::AGrenadeLauncherProjectile()
@@ -86,7 +89,13 @@ void AGrenadeLauncherProjectile::Explode()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, CollisionComponent->GetComponentLocation(), CollisionComponent->GetComponentRotation());
 	}
 
-	DrawDebugSphere(GetWorld(), CollisionComponent->GetComponentLocation(), DamageRadius, 12.0f, FColor::Yellow, false, 1.0f, 0, 1.0f);
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
+	if (bDrawDebug)
+	{
+		DrawDebugSphere(GetWorld(), CollisionComponent->GetComponentLocation(), DamageRadius, 12.0f, FColor::Yellow, false, 1.0f, 0, 1.0f);
+	}
+#endif
 	
 	Destroy();
 }
