@@ -79,26 +79,35 @@ void ANexusWeapon::Fire()
 #endif
 
 		// Spawn particle effect for muzzle flash.
-		if (MuzzleVFX)
-		{
-			UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, MeshComponent, MuzzleSocketName);
-		}
+		PlayMuzzleEffect();
 
 		// Spawn bullet tracer particle effect.
-		if (TracerVFX)
-		{
-			FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
+		PlayBulletTracerEffect(BulletTracerTarget);		
+	}	
+}
 
-			UParticleSystemComponent* TracerComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerVFX, MuzzleLocation);
-
-			if (TracerComponent)
-			{
-				TracerComponent->SetVectorParameter(TracerTargetParameterName, BulletTracerTarget);
-			}
-		}
-		
+void ANexusWeapon::PlayMuzzleEffect() const
+{
+	// Spawn particle effect for muzzle flash.
+	if (MuzzleVFX)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, MeshComponent, MuzzleSocketName);
 	}
-	
+}
+
+void ANexusWeapon::PlayBulletTracerEffect(FVector BulletTracerTarget) const
+{
+	if (TracerVFX)
+	{
+		const FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
+
+		UParticleSystemComponent* TracerComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerVFX, MuzzleLocation);
+
+		if (TracerComponent)
+		{
+			TracerComponent->SetVectorParameter(TracerTargetParameterName, BulletTracerTarget);
+		}
+	}
 }
 
 // Called every frame

@@ -67,6 +67,11 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Explode();
 
+	/**
+	 * \brief Spawn particle effect for explosion.
+	 */
+	void PlayExplosionEffect() const;
+	
 private:
 
 	/**

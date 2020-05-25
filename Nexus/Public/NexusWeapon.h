@@ -17,6 +17,12 @@ public:
 	// Sets default values for this actor's properties
 	ANexusWeapon();
 
+	/**
+	 * \brief Shoot the weapon
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void Fire();
+	
 protected:
 
 	/**
@@ -77,10 +83,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	/**
-	 * \brief Shoot the weapon
+	 * \brief Spawn particle effect for muzzle flash.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
+	void PlayMuzzleEffect() const;
+
+	/**
+	 * \brief Spawn bullet tracer particle effect.
+	 */
+	void PlayBulletTracerEffect(FVector BulletTracerTarget) const;
 
 public:	
 	// Called every frame

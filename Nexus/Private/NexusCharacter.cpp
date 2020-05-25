@@ -31,6 +31,21 @@ void ANexusCharacter::BeginPlay()
 
 	// Cache FOV so that we can reset when we stop ADS.
 	DefaultFOV = CameraComponent->FieldOfView;
+
+	// Set spawn collision handling override.
+	FActorSpawnParameters ActorSpawnParams;
+	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	// Spawn the default character weapon
+	CurrentWeapon = GetWorld()->SpawnActor<ANexusWeapon>(SpawnWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, ActorSpawnParams);
+
+	if (CurrentWeapon)
+	{
+		// Set owner for use in weapon fire function
+		CurrentWeapon->SetOwner(this);
+		// Attach the weapon to the character's hand
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
+	}
 }
 
 /**
@@ -79,6 +94,14 @@ void ANexusCharacter::EndADS()
 	bShouldAimDownSight = false;
 }
 
+void ANexusCharacter::Shoot()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();
+	}
+}
+
 // Called every frame
 void ANexusCharacter::Tick(float DeltaTime)
 {
@@ -105,6 +128,8 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	PlayerInputComponent->BindAction(AimingBindingName, IE_Pressed, this, &ANexusCharacter::StartADS);
 	PlayerInputComponent->BindAction(AimingBindingName, IE_Released, this, &ANexusCharacter::EndADS);
+
+	PlayerInputComponent->BindAction(ShootBindingName, IE_Pressed, this, &ANexusCharacter::Shoot);
 }
 
 FVector ANexusCharacter::GetPawnViewLocation() const

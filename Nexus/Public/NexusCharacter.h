@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "NexusWeapon.h"
 #include "NexusCharacter.generated.h"
 
 class UCameraComponent;
@@ -43,6 +44,18 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100))
 	float ADSInterpolationSpeed = 20.0f;
+
+	/**
+	 * \brief Weapon that the character should spawn with.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	TSubclassOf<ANexusWeapon> SpawnWeaponClass;
+
+	/**
+	 * \brief Name of the socket at the weapon's muzzle.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	FName WeaponSocketName = "hand_rSocket";
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -79,6 +92,11 @@ protected:
 	 */
 	void EndADS();
 
+	/**
+	 * \brief Make the character fire the currently equipped weapon.
+	 */
+	void Shoot();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -109,7 +127,12 @@ private:
 	 * \brief Used to toggle the ADS zoom.
 	 */
 	bool bShouldAimDownSight;
-	
+
+	/**
+	 * \brief The weapon the character is currently using.
+	 */
+	ANexusWeapon* CurrentWeapon;
+		
 	/**
 	 * \brief Name used for move forward input binding.
 	 */
@@ -144,4 +167,9 @@ private:
 	 * \brief Name used for aiming input binding.
 	 */
 	const FName AimingBindingName = "AimDownSight";
+
+	/**
+	 * \brief Name used for shooting input binding.
+	 */
+	const FName ShootBindingName = "Fire";
 };

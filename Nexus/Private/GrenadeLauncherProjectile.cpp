@@ -84,10 +84,7 @@ void AGrenadeLauncherProjectile::Explode()
 		{}, this, ProjectileOwner->GetInstigatorController());
 
 	// Spawn particle effect for explosion.
-	if (ExplosionVFX)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, CollisionComponent->GetComponentLocation(), CollisionComponent->GetComponentRotation());
-	}
+	PlayExplosionEffect();
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
@@ -98,4 +95,12 @@ void AGrenadeLauncherProjectile::Explode()
 #endif
 	
 	Destroy();
+}
+
+void AGrenadeLauncherProjectile::PlayExplosionEffect() const
+{
+	if (ExplosionVFX)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, CollisionComponent->GetComponentLocation(), CollisionComponent->GetComponentRotation());
+	}
 }

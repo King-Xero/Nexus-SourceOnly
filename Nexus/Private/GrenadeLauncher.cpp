@@ -16,7 +16,7 @@ void AGrenadeLauncher::Fire()
 
 		const FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
 
-		// Set Spawn Collision Handling Override
+		// Set spawn collision handling override.
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -34,9 +34,6 @@ void AGrenadeLauncher::Fire()
 		}
 
 		// Spawn particle effect for muzzle flash.
-		if (MuzzleVFX)
-		{
-			UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, MeshComponent, MuzzleSocketName);
-		}
+		PlayMuzzleEffect();
 	}
 }
