@@ -79,6 +79,12 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetParameterName = "BeamEnd";
 
+	/**
+	 * \brief Camera shake triggered when the weapon is fired.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<UCameraShake> WeaponCameraShake;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -91,6 +97,11 @@ protected:
 	 * \brief Spawn bullet tracer particle effect.
 	 */
 	void PlayBulletTracerEffect(FVector BulletTracerTarget) const;
+
+	/**
+	 * \brief Shake the owning characters camera when the weapon is fired.
+	 */
+	void PlayCameraShake() const;
 
 public:	
 	// Called every frame

@@ -35,5 +35,7 @@ void AGrenadeLauncher::Fire()
 
 		// Spawn particle effect for muzzle flash.
 		PlayMuzzleEffect();
+
+		PlayCameraShake();
 	}
 }

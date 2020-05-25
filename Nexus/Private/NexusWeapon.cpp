@@ -82,7 +82,9 @@ void ANexusWeapon::Fire()
 		PlayMuzzleEffect();
 
 		// Spawn bullet tracer particle effect.
-		PlayBulletTracerEffect(BulletTracerTarget);		
+		PlayBulletTracerEffect(BulletTracerTarget);
+
+		PlayCameraShake();
 	}	
 }
 
@@ -108,6 +110,23 @@ void ANexusWeapon::PlayBulletTracerEffect(FVector BulletTracerTarget) const
 			TracerComponent->SetVectorParameter(TracerTargetParameterName, BulletTracerTarget);
 		}
 	}
+}
+
+void ANexusWeapon::PlayCameraShake() const
+{
+	if (WeaponCameraShake)
+	{
+		// Get the owners controller and play camera shake
+		APawn* WeaponOwner = Cast<APawn>(GetOwner());
+		if (WeaponOwner)
+		{
+			APlayerController* WeaponOwnerController = Cast<APlayerController>(WeaponOwner->GetController());
+			if (WeaponOwnerController)
+			{
+				WeaponOwnerController->ClientPlayCameraShake(WeaponCameraShake);
+			}
+		}
+	}	
 }
 
 // Called every frame
