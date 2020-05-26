@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Nexus/Utils/NexusTypeDefinitions.h"
 #include "Components/NexusHealthComponent.h"
+#include "Nexus/Utils/Logging/NexusLogging.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -170,6 +171,8 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 	// If the character's health is 0 or less and not currently dead, the character should die.
 	if (0.0f >= Health && !bIsCharacterDead)
 	{
+		FNexusLogging::Log(ELogLevel::DEBUG, "Character has died.");
+		
 		bIsCharacterDead = true;
 
 		// Disable all collisions on capsule component.

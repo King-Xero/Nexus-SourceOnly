@@ -2,6 +2,7 @@
 
 
 #include "Components/NexusHealthComponent.h"
+#include "Nexus/Utils/Logging/NexusLogging.h"
 
 // Sets default values for this component's properties
 UNexusHealthComponent::UNexusHealthComponent()
@@ -45,6 +46,10 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 	}
 	else
 	{
+		FStringFormatOrderedArguments LogArgs;
+		LogArgs.Add(FStringFormatArg(DamageAmount));
+		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Damage inflicted: {0}"), LogArgs));
+		
 		// Ensure that the new health value is between 0 and max health.
 		CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
 

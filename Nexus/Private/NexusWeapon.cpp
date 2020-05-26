@@ -123,7 +123,7 @@ void ANexusWeapon::Fire()
 		}
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-		bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
+		const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
 		if (bDrawDebug)
 		{
 			DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
