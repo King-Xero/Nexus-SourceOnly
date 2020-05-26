@@ -60,23 +60,32 @@ void ANexusWeapon::Fire()
 		{
 			AActor* HitActor = WeaponHitResult.GetActor();
 
-			// Apply damage to the hit actor.
-			UGameplayStatics::ApplyPointDamage(HitActor, WeaponDamage, ShotDirection, WeaponHitResult, WeaponOwner->GetInstigatorController(), this, DamageType);
-
-			// Set the impact vfx to be played, depending on the surface type that is hit.
+			// Set the impact vfx to be played and damage amount, depending on the surface type that is hit.
 			UParticleSystem* SurfaceImpactVFX = nullptr;
 			EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(WeaponHitResult.PhysMaterial.Get());
-						
+
+			float DamageToInflict = WeaponDamage;
+			
 			switch (SurfaceType)
 			{
 				case SURFACE_CHARACTER_HEAD:
+					SurfaceImpactVFX = CharacterImpactVFX;
+					DamageToInflict *= HeadShotDamageMultiplier;
+					break;
 				case SURFACE_CHARACTER_BODY:
+					SurfaceImpactVFX = CharacterImpactVFX;
+					break;
 				case SURFACE_CHARACTER_LIMBS:
 					SurfaceImpactVFX = CharacterImpactVFX;
+					DamageToInflict *= LimbDamageMultiplier;
 					break;
 				default:
 					SurfaceImpactVFX = DefaultImpactVFX;
+					break;
 			}
+
+			// Apply damage to the hit actor.
+			UGameplayStatics::ApplyPointDamage(HitActor, DamageToInflict, ShotDirection, WeaponHitResult, WeaponOwner->GetInstigatorController(), this, DamageType);
 
 			// Spawn particle effect for impact.
 			if (SurfaceImpactVFX)

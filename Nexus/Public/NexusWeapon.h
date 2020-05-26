@@ -42,6 +42,18 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float WeaponDamage = 20.0f;
+
+	/**
+	 * \brief The damage multiplier applied when this weapon hits a character's head.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float HeadShotDamageMultiplier = 5.0f;
+
+	/**
+	 * \brief The damage multiplier applied when this weapon hits a character's limbs.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float LimbDamageMultiplier = 0.5f;
 	
 	/**
 	 * \brief The type of damage that the weapon inflicts.
