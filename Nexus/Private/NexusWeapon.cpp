@@ -22,10 +22,35 @@ ANexusWeapon::ANexusWeapon()
 	RootComponent = MeshComponent;
 }
 
+// Called every frame
+void ANexusWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void ANexusWeapon::StartFiring()
+{
+	// Need to calculate a first delay to that the firing rate cannot be bypassed with rapid input.
+	// The first delay has to be at least 0, as passing a negative value has reserved functionality.
+	const float FirstDelay = FMath::Max(LastFireTime + WeaponFireDelayTime - GetWorld()->TimeSeconds, 0.0f);
+	
+	// Start looping timer to start automatic fire
+	GetWorldTimerManager().SetTimer(TimerHandle_WeaponFireDelay, this, &ANexusWeapon::Fire,  WeaponFireDelayTime, true, FirstDelay);
+}
+
+void ANexusWeapon::StopFiring()
+{
+	// Stop looping timer to stop automatic fire
+	GetWorldTimerManager().ClearTimer(TimerHandle_WeaponFireDelay);
+}
+
 // Called when the game starts or when spawned
 void ANexusWeapon::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+
+	// Calculate the time between weapon shot. Rate of fire is round per minute.
+	WeaponFireDelayTime = 60.0f / WeaponRateOfFire;
 }
 
 /**
@@ -112,6 +137,9 @@ void ANexusWeapon::Fire()
 		PlayBulletTracerEffect(BulletTracerTarget);
 
 		PlayCameraShake();
+
+		// This needs to be set to prevent the firing rate getting bypassed with rapid firing input.
+		LastFireTime = GetWorld()->GetTimeSeconds();
 	}	
 }
 
@@ -154,11 +182,4 @@ void ANexusWeapon::PlayCameraShake() const
 			}
 		}
 	}	
-}
-
-// Called every frame
-void ANexusWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }

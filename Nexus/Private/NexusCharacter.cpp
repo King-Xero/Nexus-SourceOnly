@@ -24,6 +24,48 @@ ANexusCharacter::ANexusCharacter()
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
+// Called every frame
+void ANexusCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	SetAimDownSight(DeltaTime);
+}
+
+// Called to bind functionality to input
+void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis(MoveForwardBindingName, this, &ANexusCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(MoveRightBindingName, this, &ANexusCharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis(LookUpBindingName, this, &ANexusCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TurnBindingName, this, &ANexusCharacter::AddControllerYawInput);
+
+	PlayerInputComponent->BindAction(CrouchBindingName, IE_Pressed, this, &ANexusCharacter::StartCrouch);
+	PlayerInputComponent->BindAction(CrouchBindingName, IE_Released, this, &ANexusCharacter::EndCrouch);
+
+	PlayerInputComponent->BindAction(JumpBindingName, IE_Pressed, this, &ANexusCharacter::Jump);
+
+	PlayerInputComponent->BindAction(AimingBindingName, IE_Pressed, this, &ANexusCharacter::StartADS);
+	PlayerInputComponent->BindAction(AimingBindingName, IE_Released, this, &ANexusCharacter::EndADS);
+
+	PlayerInputComponent->BindAction(ShootBindingName, IE_Pressed, this, &ANexusCharacter::StartShooting);
+	PlayerInputComponent->BindAction(ShootBindingName, IE_Released, this, &ANexusCharacter::StopShooting);
+}
+
+FVector ANexusCharacter::GetPawnViewLocation() const
+{
+	if (CameraComponent)
+	{
+		// View for character should be that of the 3rd person camera.
+		return CameraComponent->GetComponentLocation();
+	}
+
+	return Super::GetPawnViewLocation();
+}
+
 // Called when the game starts or when spawned
 void ANexusCharacter::BeginPlay()
 {
@@ -94,53 +136,20 @@ void ANexusCharacter::EndADS()
 	bShouldAimDownSight = false;
 }
 
-void ANexusCharacter::Shoot()
+void ANexusCharacter::StartShooting()
 {
 	if (CurrentWeapon)
 	{
-		CurrentWeapon->Fire();
+		CurrentWeapon->StartFiring();
 	}
 }
 
-// Called every frame
-void ANexusCharacter::Tick(float DeltaTime)
+void ANexusCharacter::StopShooting()
 {
-	Super::Tick(DeltaTime);
-
-	SetAimDownSight(DeltaTime);
-}
-
-// Called to bind functionality to input
-void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(MoveForwardBindingName, this, &ANexusCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(MoveRightBindingName, this, &ANexusCharacter::MoveRight);
-
-	PlayerInputComponent->BindAxis(LookUpBindingName, this, &ANexusCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis(TurnBindingName, this, &ANexusCharacter::AddControllerYawInput);
-
-	PlayerInputComponent->BindAction(CrouchBindingName, IE_Pressed, this, &ANexusCharacter::StartCrouch);
-	PlayerInputComponent->BindAction(CrouchBindingName, IE_Released, this, &ANexusCharacter::EndCrouch);
-	
-	PlayerInputComponent->BindAction(JumpBindingName, IE_Pressed, this, &ANexusCharacter::Jump);
-
-	PlayerInputComponent->BindAction(AimingBindingName, IE_Pressed, this, &ANexusCharacter::StartADS);
-	PlayerInputComponent->BindAction(AimingBindingName, IE_Released, this, &ANexusCharacter::EndADS);
-
-	PlayerInputComponent->BindAction(ShootBindingName, IE_Pressed, this, &ANexusCharacter::Shoot);
-}
-
-FVector ANexusCharacter::GetPawnViewLocation() const
-{
-	if (CameraComponent)
+	if (CurrentWeapon)
 	{
-		// View for character should be that of the 3rd person camera.
-		return CameraComponent->GetComponentLocation();
+		CurrentWeapon->StopFiring();
 	}
-
-	return Super::GetPawnViewLocation();
 }
 
 void ANexusCharacter::SetAimDownSight(float DeltaTime)

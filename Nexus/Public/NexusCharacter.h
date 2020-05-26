@@ -19,6 +19,18 @@ public:
 	// Sets default values for this character's properties
 	ANexusCharacter();
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/**
+	 * \brief Return characters eye location.
+	 * \return Eye location
+	 */
+	virtual FVector GetPawnViewLocation() const override;
+
 protected:
 
 	/**
@@ -93,22 +105,14 @@ protected:
 	void EndADS();
 
 	/**
-	 * \brief Make the character fire the currently equipped weapon.
+	 * \brief Make the character start firing the currently equipped weapon.
 	 */
-	void Shoot();
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void StartShooting();
 
 	/**
-	 * \brief Return characters eye location.
-	 * \return Eye location
+	 * \brief Make the character stop firing the currently equipped weapon.
 	 */
-	virtual FVector GetPawnViewLocation() const override;
+	void StopShooting();
 	
 private:
 

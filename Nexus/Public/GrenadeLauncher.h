@@ -15,6 +15,13 @@ class NEXUS_API AGrenadeLauncher : public ANexusWeapon
 {
 	GENERATED_BODY()
 
+public:
+
+	/**
+	 * \brief Start shooting the weapon.
+	 */
+	virtual void StartFiring() override;
+	
 protected:
 
 	/**
@@ -28,6 +35,9 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float DamageRadius;
-	
+
+	/**
+	 * \brief Shoot the weapon.
+	 */
 	virtual void Fire() override;
 };

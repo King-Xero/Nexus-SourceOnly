@@ -4,6 +4,15 @@
 #include "GrenadeLauncher.h"
 #include "Kismet/GameplayStatics.h"
 
+void AGrenadeLauncher::StartFiring()
+{
+	// Weapon should fire once, if the time elapsed since the last shot is greater than the fire delay.
+	if (GetWorld()->GetTimeSeconds() >= LastFireTime + WeaponFireDelayTime)
+	{
+		Fire();
+	}
+}
+
 void AGrenadeLauncher::Fire()
 {
 	AActor* WeaponOwner = GetOwner();
@@ -37,5 +46,8 @@ void AGrenadeLauncher::Fire()
 		PlayMuzzleEffect();
 
 		PlayCameraShake();
+
+		// This needs to be set to prevent the firing rate getting bypassed with rapid firing input.
+		LastFireTime = GetWorld()->GetTimeSeconds();
 	}
 }

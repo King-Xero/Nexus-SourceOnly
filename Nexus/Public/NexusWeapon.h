@@ -17,14 +17,29 @@ public:
 	// Sets default values for this actor's properties
 	ANexusWeapon();
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 	/**
-	 * \brief Shoot the weapon
+	 * \brief Start shooting the weapon.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
+	virtual void StartFiring();
+
+	/**
+	 * \brief Stop shooting the weapon.
+	 */
+	virtual void StopFiring();	
 	
 protected:
 
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	
+	/**
+	 * \brief Shoot the weapon.
+	 */
+	virtual void Fire();
+	
 	/**
 	 * \brief The visible mesh of the weapon.
 	 */
@@ -54,7 +69,13 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float LimbDamageMultiplier = 0.5f;
-	
+
+	/**
+	 * \brief The firing rate of the weapon. (Rounds Per Minute)
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float WeaponRateOfFire = 60.0f;
+		
 	/**
 	 * \brief The type of damage that the weapon inflicts.
 	 */
@@ -103,9 +124,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> WeaponCameraShake;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	/**
 	 * \brief Spawn particle effect for muzzle flash.
 	 */
@@ -121,8 +139,18 @@ protected:
 	 */
 	void PlayCameraShake() const;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	
+	/**
+	 * \brief Handle used to manage the weapon fire delay timer.
+	 */
+	FTimerHandle TimerHandle_WeaponFireDelay;
+
+	/**
+	 * \brief The last time the weapon fired. (Cached when the weapon fire method executes)
+	 */
+	float LastFireTime;
+
+	/**
+	 * \brief The time delay between weapon shots. (Calculated using WeaponRateOfFire)
+	 */
+	float WeaponFireDelayTime;
 };
