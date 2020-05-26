@@ -31,17 +31,6 @@ public:
 	UFUNCTION()
 	const float& GetCurrentHealth() const;
 
-	/**
-	 * \brief Decrease current health of the health component. Delegate method for owners OnTakeAnyDamage event. Uses the signature for FTakeAnyDamageSignature.
-	 * \param DamagedActor The actor receiving the damage
-	 * \param DamageAmount The amount of health to deplete.
-	 * \param DamageType the type of damage that is being inflicted
-	 * \param InstigatedBy The controller that is inflicting the damage (specific player or ai)
-	 * \param DamageCauser The actor that inflicted the damage (player, weapon, etc)
-	 */
-	UFUNCTION()
-	void TakeDamage(AActor* DamagedActor, float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
-
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 
@@ -55,6 +44,17 @@ protected:
 	
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	/**
+	 * \brief Decrease current health of the health component. Delegate method for owner's OnTakeAnyDamage event. Uses the signature for FTakeAnyDamageSignature.
+	 * \param DamagedActor The actor receiving the damage.
+	 * \param DamageAmount The amount of health to deplete.
+	 * \param DamageType The type of damage that is being inflicted.
+	 * \param InstigatedBy The controller that is inflicting the damage. (specific player or ai)
+	 * \param DamageCauser The actor that inflicted the damage. (player, weapon, etc)
+	 */
+	UFUNCTION()
+	void TakeDamage(AActor* DamagedActor, float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 private:
 

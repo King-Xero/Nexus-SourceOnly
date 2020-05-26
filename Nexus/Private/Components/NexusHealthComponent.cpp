@@ -20,6 +20,22 @@ const float& UNexusHealthComponent::GetCurrentHealth() const
 	return CurrentHealth;
 }
 
+// Called when the game starts
+void UNexusHealthComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Wire up health component to owners OnTakeAnyDamage event.
+	AActor* cOwner = GetOwner();
+	if (cOwner)
+	{
+		cOwner->OnTakeAnyDamage.AddDynamic(this, &UNexusHealthComponent::TakeDamage);
+	}
+
+	// Initialise current health
+	CurrentHealth = MaxHealth;
+}
+
 void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// Only deplete health if the damage amount is a positive value.
@@ -35,19 +51,4 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 		// Raise the health changed event.
 		OnHealthChanged.Broadcast(this, CurrentHealth, DamageAmount, DamageType, InstigatedBy, DamageCauser);
 	}
-}
-
-
-// Called when the game starts
-void UNexusHealthComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// Wire up health component to owners OnTakeAnyDamage event.
-	AActor* cOwner = GetOwner();
-	if (cOwner)
-	{
-		cOwner->OnTakeAnyDamage.AddDynamic(this, &UNexusHealthComponent::TakeDamage);
-	}
-	
 }

@@ -7,6 +7,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Nexus/Utils/NexusTypeDefinitions.h"
+#include "Components/NexusHealthComponent.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -22,6 +23,9 @@ ANexusCharacter::ANexusCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
+	// Initialise the health component
+	CharacterHealthComponent = CreateDefaultSubobject<UNexusHealthComponent>(TEXT("HealthComponent"));
+	
 	// Disable weapon collisions on the capsule component so that the mesh collisions work as expected.
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_OBJECT_PROJECTILE, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_TRACE_WEAPON, ECR_Ignore);
@@ -94,6 +98,9 @@ void ANexusCharacter::BeginPlay()
 		// Attach the weapon to the character's hand
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
 	}
+
+	// Wire up health changed event
+	CharacterHealthComponent->OnHealthChanged.AddDynamic(this, &ANexusCharacter::HealthChanged);
 }
 
 /**
@@ -155,6 +162,31 @@ void ANexusCharacter::StopShooting()
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFiring();
+	}
+}
+
+void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	// If the character's health is 0 or less and not currently dead, the character should die.
+	if (0.0f >= Health && !bIsCharacterDead)
+	{
+		bIsCharacterDead = true;
+
+		// Disable all collisions on capsule component.
+		UCapsuleComponent* cCapsuleCollider = GetCapsuleComponent();
+		cCapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		cCapsuleCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+		// Immediately stop all movement, and prevent the component from updating.
+		UPawnMovementComponent* cMovementComponent = GetMovementComponent();
+		cMovementComponent->StopMovementImmediately();
+		cMovementComponent->SetComponentTickEnabled(false);
+
+		// Disable further movement
+		DetachFromControllerPendingDestroy();
+
+		// Setting the lifespan will cause the character to be destroyed after the time value passed.
+		SetLifeSpan(DeathLifeSpan);
 	}
 }
 

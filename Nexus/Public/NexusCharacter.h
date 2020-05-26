@@ -9,6 +9,7 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class UNexusHealthComponent;
 
 UCLASS()
 class NEXUS_API ANexusCharacter : public ACharacter
@@ -46,6 +47,12 @@ protected:
 	USpringArmComponent* SpringArmComponent;
 
 	/**
+	 * \brief Component used to manage health.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UNexusHealthComponent* CharacterHealthComponent;
+
+	/**
 	 * \brief Field of view value for aiming down sights.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
@@ -68,6 +75,12 @@ protected:
 	 */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	FName WeaponSocketName = "hand_rSocket";
+
+	/**
+	 * \brief The number of seconds until the character is destroyed, after the character dies. (0 = character will not be destroyed)
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	float DeathLifeSpan = 10.0f;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -113,6 +126,18 @@ protected:
 	 * \brief Make the character stop firing the currently equipped weapon.
 	 */
 	void StopShooting();
+
+	/**
+	 * \brief Respond to a change in health. Wired up to health components OnHealthChanged event. Uses the signature for FOnHealthChangedSignature.
+	 * \param HealthComponent The health component the experienced a health change.
+	 * \param Health The amount of health the component now has.
+	 * \param HealthDelta The amount of health that changed.
+	 * \param DamageType The type of damage that was being inflicted.
+	 * \param InstigatedBy The controller that inflicted the health change. (specific player or ai)
+	 * \param DamageCauser The actor that inflicted the health change. (player, weapon, etc)
+	 */
+	UFUNCTION()
+	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 	
 private:
 
@@ -136,6 +161,11 @@ private:
 	 * \brief The weapon the character is currently using.
 	 */
 	ANexusWeapon* CurrentWeapon;
+
+	/**
+	 * \brief Used to track if the character is dead.
+	 */
+	bool bIsCharacterDead;
 		
 	/**
 	 * \brief Name used for move forward input binding.
