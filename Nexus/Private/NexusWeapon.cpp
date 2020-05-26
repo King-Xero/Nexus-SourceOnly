@@ -56,7 +56,7 @@ void ANexusWeapon::Fire()
 		
 		FHitResult WeaponHitResult;		
 		// Trace the world between the start and end locations. Returns true if blocking hit.
-		if(GetWorld()->LineTraceSingleByChannel(WeaponHitResult, EyeLocation, TraceEnd, ECC_Visibility, CollisionQueryParams))
+		if(GetWorld()->LineTraceSingleByChannel(WeaponHitResult, EyeLocation, TraceEnd, COLLISION_TRACE_WEAPON, CollisionQueryParams))
 		{
 			AActor* HitActor = WeaponHitResult.GetActor();
 
