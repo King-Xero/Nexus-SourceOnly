@@ -32,6 +32,12 @@ public:
 	 */
 	virtual FVector GetPawnViewLocation() const override;
 
+	/**
+	 * \brief Check if the character is dead.
+	 * \return true - dead, false - alive.
+	 */
+	bool GetIsCharacterDead() const;
+
 protected:
 
 	/**

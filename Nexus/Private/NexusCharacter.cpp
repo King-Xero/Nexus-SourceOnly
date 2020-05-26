@@ -77,6 +77,11 @@ FVector ANexusCharacter::GetPawnViewLocation() const
 	return Super::GetPawnViewLocation();
 }
 
+bool ANexusCharacter::GetIsCharacterDead() const
+{
+	return bIsCharacterDead;
+}
+
 // Called when the game starts or when spawned
 void ANexusCharacter::BeginPlay()
 {
