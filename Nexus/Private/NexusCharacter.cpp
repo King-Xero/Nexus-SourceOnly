@@ -5,6 +5,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Nexus/Utils/NexusTypeDefinitions.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -19,6 +21,10 @@ ANexusCharacter::ANexusCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+
+	// Disable weapon collisions on the capsule component so that the mesh collisions work as expected.
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_OBJECT_PROJECTILE, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_TRACE_WEAPON, ECR_Ignore);
 
 	// This must be set to allow the character to crouch.
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
