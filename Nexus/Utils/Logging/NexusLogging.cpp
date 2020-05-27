@@ -1,6 +1,8 @@
 ﻿#include "NexusLogging.h"
 #include "Engine/Engine.h"
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "Nexus/Utils/ConsoleVariables.h"
+#endif
 
 void FNexusLogging::Log(ELogLevel LoggingLevel, FString Message)
 {

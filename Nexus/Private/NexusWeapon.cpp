@@ -2,12 +2,12 @@
 
 
 #include "NexusWeapon.h"
-#include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Nexus/Utils/NexusTypeDefinitions.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
 #endif
 

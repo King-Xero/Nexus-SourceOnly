@@ -5,8 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
 #endif
 
@@ -79,13 +79,12 @@ void AGrenadeLauncherProjectile::Explode()
 {
 	AActor* ProjectileOwner = GetInstigator();
 
-	// Apply damage to actors around the projectile
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), DamageAmount, CollisionComponent->GetComponentLocation(), DamageRadius, DamageType,
-		{}, this, ProjectileOwner->GetInstigatorController());
-
 	// Spawn particle effect for explosion.
 	PlayExplosionEffect();
 
+	// Apply damage to actors around the projectile.
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), DamageAmount, CollisionComponent->GetComponentLocation(), DamageRadius, DamageType,{}, this, ProjectileOwner->GetInstigatorController());
+	
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
 	if (bDrawDebug)

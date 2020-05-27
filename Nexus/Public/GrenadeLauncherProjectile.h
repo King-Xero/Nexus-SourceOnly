@@ -62,7 +62,7 @@ protected:
 	UParticleSystem* ExplosionVFX;
 	
 	/**
-	 * \brief Explode the projectile
+	 * \brief Explode the projectile.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Explode();

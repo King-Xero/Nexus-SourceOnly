@@ -99,13 +99,13 @@ void ANexusCharacter::BeginPlay()
 
 	if (CurrentWeapon)
 	{
-		// Set owner for use in weapon fire function
+		// Set owner for use in weapon fire function.
 		CurrentWeapon->SetOwner(this);
-		// Attach the weapon to the character's hand
+		// Attach the weapon to the character's hand.
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
 	}
 
-	// Wire up health changed event
+	// Wire up health changed event.
 	CharacterHealthComponent->OnHealthChanged.AddDynamic(this, &ANexusCharacter::HealthChanged);
 }
 

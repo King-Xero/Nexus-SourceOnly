@@ -31,7 +31,7 @@ protected:
 	TSubclassOf<AGrenadeLauncherProjectile> ProjectileClass;
 
 	/**
-	 * \brief The amount of damage this weapon deals.
+	 * \brief The distance within which this projectile deals damage.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float DamageRadius;
