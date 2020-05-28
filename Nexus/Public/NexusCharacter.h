@@ -36,7 +36,7 @@ public:
 	 * \brief Check if the character is dead.
 	 * \return true - dead, false - alive.
 	 */
-	bool GetIsCharacterDead() const;
+	bool IsDead() const;
 
 protected:
 
@@ -161,7 +161,7 @@ private:
 	/**
 	 * \brief Used to toggle the ADS zoom.
 	 */
-	bool bShouldAimDownSight;
+	bool bAimDownSight;
 
 	/**
 	 * \brief The weapon the character is currently using.
@@ -171,7 +171,7 @@ private:
 	/**
 	 * \brief Used to track if the character is dead.
 	 */
-	bool bIsCharacterDead;
+	bool bDead;
 		
 	/**
 	 * \brief Name used for move forward input binding.

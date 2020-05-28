@@ -28,19 +28,19 @@ protected:
 	 * \brief Used to track if the character jumped.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	bool JumpEnabled;
+	bool bJumpEnabled;
 	
 	/**
 	 * \brief Used to track if the character is in the air.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	bool IsInAir;
+	bool bInAir;
 	
 	/**
 	 * \brief Used to track if the character is crouching.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	bool IsCrouching;
+	bool bCrouching;
 	
 	/**
 	 * \brief The current speed of the character.
@@ -58,7 +58,7 @@ protected:
 	 * \brief Used to track if the character is dead.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	bool IsDead;
+	bool bDead;
 
 private:
 	

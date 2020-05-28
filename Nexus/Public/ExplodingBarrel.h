@@ -124,5 +124,5 @@ private:
 	/**
 	 * \brief Used to track if the barrel has exploded.
 	 */
-	bool bIsBarrelExploded;
+	bool bExploded;
 };

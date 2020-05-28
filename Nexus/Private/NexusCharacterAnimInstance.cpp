@@ -6,9 +6,9 @@
 #include "GameFramework/PawnMovementComponent.h"
 
 UNexusCharacterAnimInstance::UNexusCharacterAnimInstance()
-	: JumpEnabled(false)
-	, IsInAir(false)
-	, IsCrouching(false)
+	: bJumpEnabled(false)
+	, bInAir(false)
+	, bCrouching(false)
 	, Speed(0.0f)
 	, Direction(0.0f)
 {
@@ -33,12 +33,12 @@ void UNexusCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (cPlayerCharacter)
 		{
 			// Set animation variables
-			JumpEnabled = cPlayerCharacter->bWasJumping;
-			IsInAir = cPlayerCharacter->GetMovementComponent()->IsFalling();
-			IsCrouching = cPlayerCharacter->bIsCrouched;
+			bJumpEnabled = cPlayerCharacter->bWasJumping;
+			bInAir = cPlayerCharacter->GetMovementComponent()->IsFalling();
+			bCrouching = cPlayerCharacter->bIsCrouched;
 			Speed = cPlayerCharacter->GetVelocity().Size();
 			Direction = CalculateDirection(cPlayerCharacter->GetVelocity(), cPlayerCharacter->GetActorRotation());
-			IsDead = cPlayerCharacter->GetIsCharacterDead();
+			bDead = cPlayerCharacter->IsDead();
 		}
 	}
 }

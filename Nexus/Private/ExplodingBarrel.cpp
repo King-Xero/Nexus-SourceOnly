@@ -57,14 +57,14 @@ void AExplodingBarrel::BeginPlay()
 void AExplodingBarrel::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If the barrel's health is 0 or less and not currently exploded, the barrel should explode.
-	if (0.0f >= Health && !bIsBarrelExploded)
+	if (0.0f >= Health && !bExploded)
 	{
 		FNexusLogging::Log(ELogLevel::DEBUG, "Barrel has exploded.");
 
 		// Set barrel instigator to damage instigator, so we know who caused the barrel to explode when inflicting damage from the barrel.
 		SetInstigator(InstigatedBy->GetPawn());
 		
-		bIsBarrelExploded = true;
+		bExploded = true;
 
 		Explode();
 

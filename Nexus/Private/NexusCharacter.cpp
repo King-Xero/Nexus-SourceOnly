@@ -77,9 +77,9 @@ FVector ANexusCharacter::GetPawnViewLocation() const
 	return Super::GetPawnViewLocation();
 }
 
-bool ANexusCharacter::GetIsCharacterDead() const
+bool ANexusCharacter::IsDead() const
 {
-	return bIsCharacterDead;
+	return bDead;
 }
 
 // Called when the game starts or when spawned
@@ -146,13 +146,13 @@ void ANexusCharacter::EndCrouch()
 void ANexusCharacter::StartADS()
 {
 	// "Zoom" the camera in.
-	bShouldAimDownSight = true;
+	bAimDownSight = true;
 }
 
 void ANexusCharacter::EndADS()
 {
 	// "Zoom" the camera out.
-	bShouldAimDownSight = false;
+	bAimDownSight = false;
 }
 
 void ANexusCharacter::StartShooting()
@@ -174,11 +174,11 @@ void ANexusCharacter::StopShooting()
 void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// If the character's health is 0 or less and not currently dead, the character should die.
-	if (0.0f >= Health && !bIsCharacterDead)
+	if (0.0f >= Health && !bDead)
 	{
 		FNexusLogging::Log(ELogLevel::DEBUG, "Character has died.");
 		
-		bIsCharacterDead = true;
+		bDead = true;
 
 		// Disable all collisions on capsule component.
 		UCapsuleComponent* cCapsuleCollider = GetCapsuleComponent();
@@ -202,7 +202,7 @@ void ANexusCharacter::SetAimDownSight(float DeltaTime)
 {
 	// Interpolate the aim down sight for a smooth aim in/out.
 	
-	const float TargetFOV = bShouldAimDownSight ? AimingFOV : DefaultFOV;
+	const float TargetFOV = bAimDownSight ? AimingFOV : DefaultFOV;
 
 	const float InterpolationFOV = FMath::FInterpTo(CameraComponent->FieldOfView, TargetFOV, DeltaTime, ADSInterpolationSpeed);
 
