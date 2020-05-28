@@ -166,6 +166,7 @@ private:
 	/**
 	 * \brief The weapon the character is currently using.
 	 */
+	UPROPERTY(Replicated)
 	ANexusWeapon* CurrentWeapon;
 
 	/**

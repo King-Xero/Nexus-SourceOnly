@@ -9,6 +9,7 @@
 #include "Nexus/Utils/NexusTypeDefinitions.h"
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -41,6 +42,13 @@ void ANexusCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SetAimDownSight(DeltaTime);
+}
+
+void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ANexusCharacter, CurrentWeapon);
 }
 
 // Called to bind functionality to input
@@ -90,20 +98,23 @@ void ANexusCharacter::BeginPlay()
 	// Cache FOV so that we can reset when we stop ADS.
 	DefaultFOV = CameraComponent->FieldOfView;
 
-	// Set spawn collision handling override.
-	FActorSpawnParameters ActorSpawnParams;
-	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	// Spawn the default character weapon
-	CurrentWeapon = GetWorld()->SpawnActor<ANexusWeapon>(SpawnWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, ActorSpawnParams);
-
-	if (CurrentWeapon)
+	if (ROLE_Authority == GetLocalRole())
 	{
-		// Set owner for use in weapon fire function.
-		CurrentWeapon->SetOwner(this);
-		// Attach the weapon to the character's hand.
-		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
-	}
+		// Set spawn collision handling override.
+		FActorSpawnParameters ActorSpawnParams;
+		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		// Spawn the default character weapon
+		CurrentWeapon = GetWorld()->SpawnActor<ANexusWeapon>(SpawnWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, ActorSpawnParams);
+
+		if (CurrentWeapon)
+		{
+			// Set owner for use in weapon fire function.
+			CurrentWeapon->SetOwner(this);
+			// Attach the weapon to the character's hand.
+			CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
+		}
+	}	
 
 	// Wire up health changed event.
 	CharacterHealthComponent->OnHealthChanged.AddDynamic(this, &ANexusCharacter::HealthChanged);

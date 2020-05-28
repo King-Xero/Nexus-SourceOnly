@@ -20,6 +20,9 @@ ANexusWeapon::ANexusWeapon()
 	// Initialise the weapon component
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
+
+	// Needs to be set to that the weapon spawns on all clients.
+	SetReplicates(true);
 }
 
 // Called every frame
