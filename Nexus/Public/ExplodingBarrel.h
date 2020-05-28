@@ -38,10 +38,16 @@ protected:
 	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	/**
-	 * \brief Explode the projectile.
+	 * \brief Explode the barrel.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Explode();
+
+	/**
+	 * \brief Replicate barrel explosion effects.
+	 */
+	UFUNCTION()
+	void OnRep_Explode() const;
 	
 	/**
 	 * \brief The visible mesh of the barrel.
@@ -110,7 +116,7 @@ protected:
 	TSubclassOf<UDamageType> BarrelDamageType;
 
 private:
-
+		
 	/**
 	 * \brief Spawn particle effect for explosion.
 	 */
@@ -124,5 +130,6 @@ private:
 	/**
 	 * \brief Used to track if the barrel has exploded.
 	 */
+	UPROPERTY(ReplicatedUsing = OnRep_Explode)
 	bool bExploded;
 };

@@ -6,6 +6,7 @@
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/RadialForceComponent.h"
+#include "Net/UnrealNetwork.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -32,6 +33,10 @@ AExplodingBarrel::AExplodingBarrel()
 	// If auto activate is not set to false, the component will run update code that constantly applies forces.
 	RadialForceComponent->bAutoActivate = false;
 	RadialForceComponent->bIgnoreOwningActor = true;
+
+	// Needs to be set to replicate explosion across all clients.
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 // Called every frame
@@ -39,6 +44,14 @@ void AExplodingBarrel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AExplodingBarrel::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate the exploded flag so that we can replicate the explosion.
+	DOREPLIFETIME(AExplodingBarrel, bExploded);
 }
 
 // Called when the game starts or when spawned
@@ -63,8 +76,6 @@ void AExplodingBarrel::HealthChanged(UNexusHealthComponent* HealthComponent, flo
 
 		// Set barrel instigator to damage instigator, so we know who caused the barrel to explode when inflicting damage from the barrel.
 		SetInstigator(InstigatedBy->GetPawn());
-		
-		bExploded = true;
 
 		Explode();
 
@@ -76,36 +87,43 @@ void AExplodingBarrel::HealthChanged(UNexusHealthComponent* HealthComponent, flo
 void AExplodingBarrel::Explode()
 {
 	AActor* BarrelOwner = GetInstigator();
+	
+	// Apply damage to actors around the barrel.
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, BarrelDamageType, {}, this, BarrelOwner->GetInstigatorController());
+	
+	// Launch barrel upwards.
+	MeshComponent->AddImpulse(FVector::UpVector * VerticalImpulseStrength, NAME_None, true);
 
+	// Emit radial force.
+	RadialForceComponent->FireImpulse();
+
+	OnRep_Explode();
+	
+	bExploded = true;
+}
+
+void AExplodingBarrel::OnRep_Explode() const
+{
 	// Spawn particle effect for explosion.
 	PlayExplosionEffect();
 
 	// Change the material on the barrel.
 	SetExplodedMaterial();
 
-	// Apply damage to actors around the barrel.
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, MeshComponent->GetComponentLocation(), ExplosionRadius, BarrelDamageType, {}, this, BarrelOwner->GetInstigatorController());
-	
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
 	if (bDrawDebug)
 	{
-		DrawDebugSphere(GetWorld(), MeshComponent->GetComponentLocation(), ExplosionRadius, 12.0f, FColor::Yellow, false, 1.0f, 0, 1.0f);
+		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12.0f, FColor::Yellow, false, 1.0f, 0, 1.0f);
 	}
 #endif
-
-	// Launch barrel upwards.
-	MeshComponent->AddImpulse(FVector::UpVector * VerticalImpulseStrength, NAME_None, true);
-
-	// Emit radial force.
-	RadialForceComponent->FireImpulse();
 }
 
 void AExplodingBarrel::PlayExplosionEffect() const
 {
 	if (ExplosionVFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, MeshComponent->GetComponentLocation(), MeshComponent->GetComponentRotation());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation(), MeshComponent->GetComponentRotation());
 	}
 }
 
