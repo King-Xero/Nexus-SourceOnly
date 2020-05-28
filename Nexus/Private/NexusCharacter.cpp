@@ -48,6 +48,7 @@ void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	// Because weapon is only spawned on the server, we have to ensure that it is replicated, so the clients can use it.
 	DOREPLIFETIME(ANexusCharacter, CurrentWeapon);
 }
 

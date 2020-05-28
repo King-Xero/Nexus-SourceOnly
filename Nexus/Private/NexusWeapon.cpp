@@ -61,6 +61,12 @@ void ANexusWeapon::BeginPlay()
  */
 void ANexusWeapon::Fire()
 {
+	// Fire should only be called via the server authority.
+	if (ROLE_Authority > GetLocalRole())
+	{
+		ServerFire();
+	}
+	
 	AActor* WeaponOwner = GetOwner();
 	
 	if (WeaponOwner)
@@ -144,6 +150,17 @@ void ANexusWeapon::Fire()
 		// This needs to be set to prevent the firing rate getting bypassed with rapid firing input.
 		LastFireTime = GetWorld()->GetTimeSeconds();
 	}	
+}
+
+void ANexusWeapon::ServerFire_Implementation()
+{
+	// The shoot code will execute via the server authority.
+	Fire();
+}
+
+bool ANexusWeapon::ServerFire_Validate()
+{
+	return true;
 }
 
 void ANexusWeapon::PlayMuzzleEffect() const

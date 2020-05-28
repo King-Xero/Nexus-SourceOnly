@@ -39,6 +39,12 @@ protected:
 	 * \brief Shoot the weapon.
 	 */
 	virtual void Fire();
+
+	/**
+	 * \brief Shoot the weapon on the server.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
 	
 	/**
 	 * \brief The visible mesh of the weapon.
