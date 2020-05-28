@@ -3,13 +3,27 @@
 
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
 UNexusHealthComponent::UNexusHealthComponent()
 {
 	// The health component should be reactive, so does not need to update every frame.
 	PrimaryComponentTick.bCanEverTick = false;
+
+	// Needs to be set to that the component is replicated on all clients.
+	SetIsReplicatedByDefault(true);
 }
+
+void UNexusHealthComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate health values on all clients.
+	DOREPLIFETIME(UNexusHealthComponent, MaxHealth);
+	DOREPLIFETIME(UNexusHealthComponent, CurrentHealth);
+}
+
 
 const float& UNexusHealthComponent::GetMaxHealth() const
 {
@@ -26,12 +40,16 @@ void UNexusHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Wire up health component to owners OnTakeAnyDamage event.
-	AActor* cOwner = GetOwner();
-	if (cOwner)
+	// Only wire up the damage event on the server.
+	if (ROLE_Authority == GetOwnerRole())
 	{
-		cOwner->OnTakeAnyDamage.AddDynamic(this, &UNexusHealthComponent::TakeDamage);
-	}
+		// Wire up health component to owners OnTakeAnyDamage event.
+		AActor* cOwner = GetOwner();
+		if (cOwner)
+		{
+			cOwner->OnTakeAnyDamage.AddDynamic(this, &UNexusHealthComponent::TakeDamage);
+		}
+	}	
 
 	// Initialise current health
 	CurrentHealth = MaxHealth;

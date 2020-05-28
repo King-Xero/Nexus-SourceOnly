@@ -50,6 +50,9 @@ void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 
 	// Because weapon is only spawned on the server, we have to ensure that it is replicated, so the clients can use it.
 	DOREPLIFETIME(ANexusCharacter, CurrentWeapon);
+
+	// Replicate the dead flag so that we can replicate the death animation.
+	DOREPLIFETIME(ANexusCharacter, bDead);
 }
 
 // Called to bind functionality to input

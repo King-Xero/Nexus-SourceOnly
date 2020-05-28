@@ -172,6 +172,7 @@ private:
 	/**
 	 * \brief Used to track if the character is dead.
 	 */
+	UPROPERTY(Replicated)
 	bool bDead;
 		
 	/**

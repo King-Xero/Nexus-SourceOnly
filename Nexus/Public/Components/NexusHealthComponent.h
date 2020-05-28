@@ -39,7 +39,7 @@ protected:
 	/**
 	 * \brief The maximum amount of health available
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
 	float MaxHealth = 100.0f;
 	
 	// Called when the game starts
@@ -61,6 +61,6 @@ private:
 	/**
 	 * \brief The current amount of health available.
 	 */
-	UPROPERTY(VisibleAnywhere, Category = "Health")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
 	float CurrentHealth;		
 };
