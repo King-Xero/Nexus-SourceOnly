@@ -6,6 +6,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Nexus/Utils/NexusTypeDefinitions.h"
+#include "Net/UnrealNetwork.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -23,12 +24,24 @@ ANexusWeapon::ANexusWeapon()
 
 	// Needs to be set to that the weapon spawns on all clients.
 	SetReplicates(true);
+
+	// Set how frequently the actor is updated on the network. (Higher frequency = less delay).
+	MinNetUpdateFrequency = 35.0f;
+	NetUpdateFrequency = 70.0f;
 }
 
 // Called every frame
 void ANexusWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ANexusWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate hit info on all clients except the owner, so the other clients can play the replicated weapon effects.
+	DOREPLIFETIME_CONDITION(ANexusWeapon, HitScanInfo, COND_SkipOwner);
 }
 
 void ANexusWeapon::StartFiring()
@@ -87,6 +100,8 @@ void ANexusWeapon::Fire()
 
 		// Bullet tracer target parameter.
 		FVector BulletTracerTarget = TraceEnd;
+
+		EPhysicalSurface SurfaceType = SurfaceType_Default;
 		
 		FHitResult WeaponHitResult;		
 		// Trace the world between the start and end locations. Returns true if blocking hit.
@@ -94,39 +109,18 @@ void ANexusWeapon::Fire()
 		{
 			AActor* HitActor = WeaponHitResult.GetActor();
 
-			// Set the impact vfx to be played and damage amount, depending on the surface type that is hit.
-			UParticleSystem* SurfaceImpactVFX = nullptr;
-			EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(WeaponHitResult.PhysMaterial.Get());
+			// Get the surface type that was hit.
+			SurfaceType = UPhysicalMaterial::DetermineSurfaceType(WeaponHitResult.PhysMaterial.Get());
 
-			float DamageToInflict = WeaponDamage;
+			// Calculate the amount of damage to inflict.
+			float DamageToInflict = WeaponDamage * GetDamageMultiplier(SurfaceType);
 			
-			switch (SurfaceType)
-			{
-				case SURFACE_CHARACTER_HEAD:
-					SurfaceImpactVFX = CharacterImpactVFX;
-					DamageToInflict *= HeadShotDamageMultiplier;
-					break;
-				case SURFACE_CHARACTER_BODY:
-					SurfaceImpactVFX = CharacterImpactVFX;
-					break;
-				case SURFACE_CHARACTER_LIMBS:
-					SurfaceImpactVFX = CharacterImpactVFX;
-					DamageToInflict *= LimbDamageMultiplier;
-					break;
-				default:
-					SurfaceImpactVFX = DefaultImpactVFX;
-					break;
-			}
-
 			// Apply damage to the hit actor.
 			UGameplayStatics::ApplyPointDamage(HitActor, DamageToInflict, ShotDirection, WeaponHitResult, WeaponOwner->GetInstigatorController(), this, DamageType);
 
-			// Spawn particle effect for impact.
-			if (SurfaceImpactVFX)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SurfaceImpactVFX, WeaponHitResult.ImpactPoint, WeaponHitResult.Normal.Rotation());
-			}
-
+			// Play weapon impact effects locally.
+			PlayWeaponImpactEffects(SurfaceType, WeaponHitResult.ImpactPoint);
+			
 			// If the shot hit something, the bullet tracer target should be updated.
 			BulletTracerTarget = WeaponHitResult.ImpactPoint;
 		}
@@ -139,13 +133,15 @@ void ANexusWeapon::Fire()
 		}
 #endif
 
-		// Spawn particle effect for muzzle flash.
-		PlayMuzzleEffect();
+		// Play weapon effects locally.
+		PlayWeaponFiredEffects(BulletTracerTarget);
 
-		// Spawn bullet tracer particle effect.
-		PlayBulletTracerEffect(BulletTracerTarget);
-
-		PlayCameraShake();
+		// The server authority should replicate the hit scan information, so clients can replicate the weapon effects.
+		if (GetLocalRole() == ROLE_Authority)
+		{
+			HitScanInfo.TraceTargetLocation = BulletTracerTarget;
+			HitScanInfo.HitSurfaceType = SurfaceType;
+		}
 
 		// This needs to be set to prevent the firing rate getting bypassed with rapid firing input.
 		LastFireTime = GetWorld()->GetTimeSeconds();
@@ -161,6 +157,65 @@ void ANexusWeapon::ServerFire_Implementation()
 bool ANexusWeapon::ServerFire_Validate()
 {
 	return true;
+}
+
+void ANexusWeapon::OnRep_HitScanInfo() const
+{
+	// This method is called when HitScanInfo is replicated.
+
+	// When the information is replicated to the other clients, they should use it to play the weapon effects.
+	PlayWeaponFiredEffects(HitScanInfo.TraceTargetLocation);
+
+	PlayWeaponImpactEffects(HitScanInfo.HitSurfaceType, HitScanInfo.TraceTargetLocation);
+}
+
+
+void ANexusWeapon::PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target) const
+{
+	// Spawn particle effect for weapon impact.
+	PlayImpactEffect(SurfaceType, Target);
+}
+
+void ANexusWeapon::PlayImpactEffect(EPhysicalSurface SurfaceType, FVector Target) const
+{
+	// Set the impact vfx to be played depending on the surface type that is hit.
+	UParticleSystem* SurfaceImpactVFX = nullptr;
+
+	switch (SurfaceType)
+	{
+		case SURFACE_CHARACTER_HEAD:
+		case SURFACE_CHARACTER_BODY:
+		case SURFACE_CHARACTER_LIMBS:
+			SurfaceImpactVFX = CharacterImpactVFX;
+			break;
+		default:
+			SurfaceImpactVFX = DefaultImpactVFX;
+			break;
+	}
+
+	// Spawn particle effect for impact.
+	if (SurfaceImpactVFX)
+	{
+		const FVector MuzzleLocation = MeshComponent->GetSocketLocation(MuzzleSocketName);
+
+		// Calculate the direction the shot was fired from so that we use the correct rotation.
+		FVector ShotDirection = Target - MuzzleLocation;
+		ShotDirection.Normalize();
+		
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SurfaceImpactVFX, Target, ShotDirection.Rotation());
+	}
+}
+
+void ANexusWeapon::PlayWeaponFiredEffects(FVector BulletTracerTarget) const
+{
+	// Spawn particle effect for muzzle flash.
+	PlayMuzzleEffect();
+
+	// Spawn bullet tracer particle effect.
+	PlayBulletTracerEffect(BulletTracerTarget);
+
+	// Shake the camera.
+	PlayCameraShake();
 }
 
 void ANexusWeapon::PlayMuzzleEffect() const
@@ -191,7 +246,7 @@ void ANexusWeapon::PlayCameraShake() const
 {
 	if (WeaponCameraShake)
 	{
-		// Get the owners controller and play camera shake
+		// Get the owners controller and play camera shake.
 		APawn* WeaponOwner = Cast<APawn>(GetOwner());
 		if (WeaponOwner)
 		{
@@ -202,4 +257,19 @@ void ANexusWeapon::PlayCameraShake() const
 			}
 		}
 	}	
+}
+
+float ANexusWeapon::GetDamageMultiplier(EPhysicalSurface SurfaceType) const
+{
+	// Return the damage multiplier for the surface type that was hit.
+	switch (SurfaceType)
+	{
+		case SURFACE_CHARACTER_HEAD:
+			return HeadShotDamageMultiplier;
+		case SURFACE_CHARACTER_LIMBS:
+			return LimbDamageMultiplier;
+		default:
+			// Default damage multiplier is 1.
+			return 1.0f;
+	}
 }
