@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "Components/NexusHealthComponent.h"
+#include "Nexus/Utils/Logging/NexusLogging.h"
 
 // Sets default values
 AExplodingEnemy::AExplodingEnemy()
@@ -20,6 +22,9 @@ AExplodingEnemy::AExplodingEnemy()
 	// Set so that the enemy can be moved using forces.
 	MeshComponent->SetSimulatePhysics(true);
 	RootComponent = MeshComponent;
+
+	// Initialise the health component
+	EnemyHealthComponent = CreateDefaultSubobject<UNexusHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called every frame
@@ -53,6 +58,11 @@ void AExplodingEnemy::BeginPlay()
 
 	// Find the initial point to move towards.
 	NextPathPoint = GetNextPathPoint();
+
+	// Wire up health changed event.
+	EnemyHealthComponent->OnHealthChanged.AddDynamic(this, &AExplodingEnemy::HealthChanged);
+
+	MaterialInstance = MeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MeshComponent->GetMaterial(0));
 }
 
 FVector AExplodingEnemy::GetNextPathPoint()
@@ -71,4 +81,27 @@ FVector AExplodingEnemy::GetNextPathPoint()
 
 	// If there is a problem getting a path point, return the enemy's current location.
 	return GetActorLocation();
+}
+
+void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	FStringFormatOrderedArguments LogArgs;
+	LogArgs.Add(FStringFormatArg(HealthDelta));
+	LogArgs.Add(FStringFormatArg(GetName()));
+
+	FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("{0} damage inflicted to {1}."), LogArgs));
+
+	if (MaterialInstance)
+	{
+		// Pulse the material.
+		MaterialInstance->SetScalarParameterValue(MaterialInstanceDamageParameterName, GetWorld()->GetTimeSeconds());
+	}
+	
+	// If the enemy's health is 0 or less and not currently dead, the enemy should die.
+	if (0.0f >= Health && !bDead)
+	{
+		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {1} has died.."), LogArgs));
+
+		bDead = true;
+	}
 }
