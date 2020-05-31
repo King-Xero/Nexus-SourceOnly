@@ -214,6 +214,12 @@ void AExplodingEnemy::Explode()
 	// Clear the timer in case it was set.
 	GetWorldTimerManager().ClearTimer(TimerHandle_SelfDestruct);
 
+	// Play explosion effects locally.
+	OnRep_Explode();
+	
+	// Must be set before applying radial damage or we can get caught in an infinite loop.
+	bExploded = true;
+	
 	// Damage is scaled with power level.
 	const float DamageToInflict = ExplosionDamage + (ExplosionDamage * CurrentPowerLevel);
 	
@@ -222,10 +228,6 @@ void AExplodingEnemy::Explode()
 
 	// Emit radial force.
 	RadialForceComponent->FireImpulse();
-
-	OnRep_Explode();
-
-	bExploded = true;
 
 	// Cannot immediately destroy the enemy because the explosions effects don't have enough time to replicate. Some delay is needed.
 	SetLifeSpan(0.01f);

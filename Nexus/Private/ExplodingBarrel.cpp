@@ -85,6 +85,12 @@ void AExplodingBarrel::HealthChanged(UNexusHealthComponent* HealthComponent, flo
 
 void AExplodingBarrel::Explode()
 {
+	// Play explosion effects locally.
+	OnRep_Explode();
+	
+	// Must be set before applying radial damage or we can get caught in an infinite loop.
+	bExploded = true;
+	
 	AActor* BarrelOwner = GetInstigator();
 	
 	// Apply damage to actors around the barrel.
@@ -95,10 +101,6 @@ void AExplodingBarrel::Explode()
 
 	// Emit radial force.
 	RadialForceComponent->FireImpulse();
-
-	OnRep_Explode();
-	
-	bExploded = true;
 }
 
 void AExplodingBarrel::OnRep_Explode() const
