@@ -87,6 +87,8 @@ void AExplodingEnemy::Tick(float DeltaTime)
 
 void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
 {
+	Super::NotifyActorBeginOverlap(OtherActor);
+	
 	if (!bSelfDestruct)
 	{
 		ANexusCharacter* PlayerCharacter = Cast<ANexusCharacter>(OtherActor);
