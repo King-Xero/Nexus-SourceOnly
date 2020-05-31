@@ -69,6 +69,18 @@ protected:
 	 */
 	UFUNCTION()
 	void OnRep_Explode() const;
+
+	/**
+	 * \brief Set the enemy's power level.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "ExplodingEnemy")
+	void SetPowerLevel();
+
+	/**
+	 * \brief Replicate enemy power level change effects.
+	 */
+	UFUNCTION()
+	void OnRep_SetPowerLevel() const;
 	
 	/**
 	 * \brief The visible mesh of the enemy.
@@ -187,7 +199,21 @@ protected:
 	/**
 	 * \brief The upper bound of the enemy movement volume to be mapped to UpperVelocityRollingRange.
 	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
 	float UpperVolumeRollingRange = 2.0f;
+
+	/**
+	 * \brief The time interval used to set the enemy's power level.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	float SetPowerLevelInterval = 1.0f;
+
+	/**
+	 * \brief The enemy's maximum power level.
+	 *	@note Used to scale damage inflicted.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	int MaximumPowerLevel = 5;
 
 	/**
 	 * \brief The type of damage that the enemy inflicts.
@@ -216,13 +242,19 @@ private:
 	 */
 	UPROPERTY(ReplicatedUsing = OnRep_Explode)
 	bool bExploded;
-
-	
+		
 	/**
 	 * \brief Used to pulse the enemy's material when it taken damage.
 	 */
 	UPROPERTY(ReplicatedUsing = OnRep_Damaged)
 	float LastTimeDamageTaken;
+
+	/**
+	 * \brief The enemy's current power level.
+	 *	@note Used to scale damage inflicted.
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_SetPowerLevel)
+	int CurrentPowerLevel;
 	
 	/**
 	 * \brief Used to track if the enemy has self destructed.
@@ -245,7 +277,17 @@ private:
 	FTimerHandle TimerHandle_SelfDestruct;
 
 	/**
+	 * \brief Handle used to manage the set power level timer.
+	 */
+	FTimerHandle TimerHandle_SetPowerLevel;
+
+	/**
 	 * \brief Name of the parameter used to pulse material when taking damage. (Defined in M_ExplodingEnemy)
 	 */
 	const FName MaterialInstanceDamageParameterName = "LastTimeDamageTaken";
+
+	/**
+	 * \brief Name of the parameter used to pulse material when taking damage. (Defined in M_ExplodingEnemy)
+	 */
+	const FName MaterialInstancePowerLevelParameterName = "PowerLevel";
 };

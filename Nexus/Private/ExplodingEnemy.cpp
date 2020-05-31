@@ -42,10 +42,11 @@ AExplodingEnemy::AExplodingEnemy()
 	RadialForceComponent->bIgnoreOwningActor = true;
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-	// Configure collisions to only detect overlaps with pawns.
+	// Configure collisions to only detect overlaps with pawns and dynamic objects.
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComponent->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	SphereComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	SphereComponent->SetSphereRadius(ExplosionRadius);
 	SphereComponent->SetupAttachment(RootComponent);
 
@@ -123,6 +124,9 @@ void AExplodingEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 
 	// Replicate the time damage was taken so that we can replicate material pulsing.
 	DOREPLIFETIME(AExplodingEnemy, LastTimeDamageTaken);
+
+	// Replicate the power level so that we can replicate power level effects.
+	DOREPLIFETIME(AExplodingEnemy, CurrentPowerLevel);
 }
 
 // Called when the game starts or when spawned
@@ -135,6 +139,8 @@ void AExplodingEnemy::BeginPlay()
 	{
 		// Find the initial point to move towards.
 		NextPathPoint = GetNextPathPoint();
+
+		GetWorldTimerManager().SetTimer(TimerHandle_SetPowerLevel, this, &AExplodingEnemy::SetPowerLevel, SetPowerLevelInterval, true, 0.0f);
 	}
 
 	// Wire up health changed event.
@@ -207,9 +213,12 @@ void AExplodingEnemy::Explode()
 {
 	// Clear the timer in case it was set.
 	GetWorldTimerManager().ClearTimer(TimerHandle_SelfDestruct);
+
+	// Damage is scaled with power level.
+	const float DamageToInflict = ExplosionDamage + (ExplosionDamage * CurrentPowerLevel);
 	
 	// Apply damage to actors around the enemy.
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, EnemyDamageType, {}, this);
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), DamageToInflict, GetActorLocation(), ExplosionRadius, EnemyDamageType, {}, this);
 
 	// Emit radial force.
 	RadialForceComponent->FireImpulse();
@@ -241,6 +250,38 @@ void AExplodingEnemy::OnRep_Explode() const
 		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12.0f, FColor::Yellow, false, 1.0f, 0, 1.0f);
 	}
 #endif
+}
+
+void AExplodingEnemy::SetPowerLevel()
+{
+	// Look for nearby exploding enemies.
+	TArray<AActor*> ExplodingEnemies;
+	SphereComponent->GetOverlappingActors(ExplodingEnemies, AExplodingEnemy::StaticClass());
+
+	// Sphere GetOverlappingActors will include self in list of actors, so need to deduct 1;
+	const int NumberOfEnemies = ExplodingEnemies.Num() - 1;
+	
+	// Power level is used to scale damage. The more exploding enemies that are nearby, to more damage is inflicted.
+	const int NewPowerLevel = FMath::Clamp(NumberOfEnemies, 0, MaximumPowerLevel);
+
+	// Power level should only be set (and thereby replicate) if the power level changes.
+	if (CurrentPowerLevel != NewPowerLevel)
+	{
+		CurrentPowerLevel = NewPowerLevel;
+
+		OnRep_SetPowerLevel();
+	}	
+}
+
+void AExplodingEnemy::OnRep_SetPowerLevel() const
+{
+	const float MaterialAlpha = static_cast<float>(CurrentPowerLevel) / static_cast<float>(MaximumPowerLevel);
+	
+	if (MaterialInstance)
+	{
+		// Make the material glow.
+		MaterialInstance->SetScalarParameterValue(MaterialInstancePowerLevelParameterName, MaterialAlpha);
+	}
 }
 
 void AExplodingEnemy::PlayExplosionVFX() const
