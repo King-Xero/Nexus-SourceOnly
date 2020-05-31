@@ -8,6 +8,7 @@
 
 class UNexusHealthComponent;
 class URadialForceComponent;
+class USphereComponent;
 
 UCLASS()
 class NEXUS_API AExplodingEnemy : public APawn
@@ -21,6 +22,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/**
+	 * \brief Event when this actor overlaps another actor, for example a player walking into a trigger.
+	 * \param OtherActor The actor that was overlapped.
+	 *	@note Components on both this and the other Actor must have bGenerateOverlapEvents set to true to generate overlap events.
+	 */
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -66,12 +74,18 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UNexusHealthComponent* EnemyHealthComponent;
-
+	
 	/**
 	 * \brief Component used to emit radial force when the enemy explodes.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	URadialForceComponent* RadialForceComponent;
+
+	/**
+	 * \brief Collision sphere used to detect nearby actors.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USphereComponent* SphereComponent;
 
 	/**
 	 * \brief Particle effect spawned at the enemy's location when it explodes.
@@ -116,6 +130,12 @@ protected:
 	float ExplosionRadius = 200.0f;
 
 	/**
+	 * \brief The time it take for this enemy to self destruct after overlapping a player.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	float SelfDestructTime = 3.0f;
+
+	/**
 	 * \brief The type of damage that the enemy inflicts.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
@@ -132,6 +152,11 @@ private:
 	 */
 	UPROPERTY(ReplicatedUsing = OnRep_Explode)
 	bool bExploded;
+
+	/**
+	 * \brief Used to track if the enemy has self destructed.
+	 */
+	bool bSelfDestruct;
 	
 	/**
 	 * \brief The next location the enemy should move to.
@@ -142,6 +167,11 @@ private:
 	 * \brief Instance of the mesh's material, required to make changes to actor instance at run time.
 	 */
 	UMaterialInstanceDynamic* MaterialInstance;
+
+	/**
+	 * \brief Handle used to manage the self destruct timer.
+	 */
+	FTimerHandle TimerHandle_SelfDestruct;
 
 	/**
 	 * \brief Name of the parameter used to pulse material when taking damage. (Defined in M_ExplodingEnemy)

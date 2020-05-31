@@ -9,6 +9,8 @@
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/SphereComponent.h"
+#include "NexusCharacter.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -37,6 +39,14 @@ AExplodingEnemy::AExplodingEnemy()
 	// If auto activate is not set to false, the component will run update code that constantly applies forces.
 	RadialForceComponent->bAutoActivate = false;
 	RadialForceComponent->bIgnoreOwningActor = true;
+
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	// Configure collisions to only detect overlaps with pawns.
+	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SphereComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SphereComponent->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	SphereComponent->SetSphereRadius(ExplosionRadius);
+	SphereComponent->SetupAttachment(RootComponent);
 }
 
 // Called every frame
@@ -61,6 +71,27 @@ void AExplodingEnemy::Tick(float DeltaTime)
 
 		MeshComponent->AddForce(MovementForceDirection * MovementForce, NAME_None, bVelocityChange);
 	}
+}
+
+void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	if (!bSelfDestruct)
+	{
+		ANexusCharacter* PlayerCharacter = Cast<ANexusCharacter>(OtherActor);
+		if (PlayerCharacter)
+		{
+			// If a player was overlapped, begin self-destruct;
+
+			FStringFormatOrderedArguments LogArgs;
+			LogArgs.Add(FStringFormatArg(GetName()));
+			LogArgs.Add(FStringFormatArg(PlayerCharacter->GetName()));
+
+			FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {0} detected player {1}. Starting self destruct."), LogArgs));
+
+			GetWorldTimerManager().SetTimer(TimerHandle_SelfDestruct, this, &AExplodingEnemy::Explode, SelfDestructTime, false);
+			bSelfDestruct = true;
+		}
+	}	
 }
 
 void AExplodingEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -132,6 +163,9 @@ void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 
 void AExplodingEnemy::Explode()
 {
+	// Clear the timer in case it was set.
+	GetWorldTimerManager().ClearTimer(TimerHandle_SelfDestruct);
+	
 	// Apply damage to actors around the enemy.
 	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, EnemyDamageType, {}, this);
 
