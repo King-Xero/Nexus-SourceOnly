@@ -53,6 +53,12 @@ protected:
 	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	/**
+	 * \brief Replicate enemy damaged effects.
+	 */
+	UFUNCTION()
+	void OnRep_Damaged() const;
+	
+	/**
 	 * \brief Explode the enemy.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "ExplodingEnemy")
@@ -211,6 +217,13 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_Explode)
 	bool bExploded;
 
+	
+	/**
+	 * \brief Used to pulse the enemy's material when it taken damage.
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_Damaged)
+	float LastTimeDamageTaken;
+	
 	/**
 	 * \brief Used to track if the enemy has self destructed.
 	 */

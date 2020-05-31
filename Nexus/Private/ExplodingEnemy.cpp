@@ -58,22 +58,26 @@ void AExplodingEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	const float DistanceToTarget = (GetActorLocation() - NextPathPoint).Size();
-
-	if (DistanceToTarget <= RequiredDistanceToTarget)
+	// Enemy movement should only update on the server authority.
+	if (ROLE_Authority == GetLocalRole() && !bExploded)
 	{
-		// If the enemy is within range of the path point, get the next point.
-		NextPathPoint = GetNextPathPoint();
-	}
-	else
-	{
-		// Move to the next target.
+		const float DistanceToTarget = (GetActorLocation() - NextPathPoint).Size();
 
-		// Calculate the direction the enemy should move in.
-		FVector MovementForceDirection = NextPathPoint - GetActorLocation();
-		MovementForceDirection.Normalize();
+		if (DistanceToTarget <= RequiredDistanceToTarget)
+		{
+			// If the enemy is within range of the path point, get the next point.
+			NextPathPoint = GetNextPathPoint();
+		}
+		else
+		{
+			// Move to the next target.
 
-		MeshComponent->AddForce(MovementForceDirection * MovementForce, NAME_None, bVelocityChange);
+			// Calculate the direction the enemy should move in.
+			FVector MovementForceDirection = NextPathPoint - GetActorLocation();
+			MovementForceDirection.Normalize();
+
+			MeshComponent->AddForce(MovementForceDirection * MovementForce, NAME_None, bVelocityChange);
+		}
 	}
 
 	// Set the volume of the movement sound effect, depending on the enemy's current velocity.
@@ -95,11 +99,16 @@ void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
 
 			FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {0} detected player {1}. Starting self destruct."), LogArgs));
 
+			// Self destruct timer should only be set on the server authority
+			if (ROLE_Authority == GetLocalRole())
+			{
+				// Start self destruct timer.
+				GetWorldTimerManager().SetTimer(TimerHandle_SelfDestruct, this, &AExplodingEnemy::Explode, SelfDestructTime, false);
+			}
+			
 			// Play self destruct effect.
 			PlaySelfDestructSFX();
 			
-			// Start self destruct timer.
-			GetWorldTimerManager().SetTimer(TimerHandle_SelfDestruct, this, &AExplodingEnemy::Explode, SelfDestructTime, false);
 			bSelfDestruct = true;
 		}
 	}	
@@ -111,6 +120,9 @@ void AExplodingEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 
 	// Replicate the exploded flag so that we can replicate the explosion.
 	DOREPLIFETIME(AExplodingEnemy, bExploded);
+
+	// Replicate the time damage was taken so that we can replicate material pulsing.
+	DOREPLIFETIME(AExplodingEnemy, LastTimeDamageTaken);
 }
 
 // Called when the game starts or when spawned
@@ -118,8 +130,12 @@ void AExplodingEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Find the initial point to move towards.
-	NextPathPoint = GetNextPathPoint();
+	// Enemy movement should only run on the server authority.
+	if (ROLE_Authority == GetLocalRole())
+	{
+		// Find the initial point to move towards.
+		NextPathPoint = GetNextPathPoint();
+	}
 
 	// Wire up health changed event.
 	EnemyHealthComponent->OnHealthChanged.AddDynamic(this, &AExplodingEnemy::HealthChanged);
@@ -140,14 +156,17 @@ FVector AExplodingEnemy::GetNextPathPoint()
 	// Get the first player in the world. **Will need to change for multiple players.**
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 
-	// Get the path from the enemy's current position to the player.
-	UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerCharacter);
-
-	if (1 < NavigationPath->PathPoints.Num())
+	if (PlayerCharacter)
 	{
-		// Return the second point in the navigation path.
-		return NavigationPath->PathPoints[1];
-	}
+		// Get the path from the enemy's current position to the player.
+		UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerCharacter);
+
+		if (1 < NavigationPath->PathPoints.Num())
+		{
+			// Return the second point in the navigation path.
+			return NavigationPath->PathPoints[1];
+		}
+	}	
 
 	// If there is a problem getting a path point, return the enemy's current location.
 	return GetActorLocation();
@@ -161,11 +180,10 @@ void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 
 	FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("{0} damage inflicted to {1}."), LogArgs));
 
-	if (MaterialInstance)
-	{
-		// Pulse the material.
-		MaterialInstance->SetScalarParameterValue(MaterialInstanceDamageParameterName, GetWorld()->GetTimeSeconds());
-	}
+	OnRep_Damaged();
+	
+	// Value is set to trigger replication of damage effect. Value is not actually used as it would cause a delay in the material pulse.
+	LastTimeDamageTaken = GetWorld()->GetTimeSeconds();
 
 	// If the enemy's health is 0 or less and not currently exploded, the enemy should explode.
 	if (0.0f >= Health && !bExploded)
@@ -173,6 +191,15 @@ void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {1} has exploded."), LogArgs));
 
 		Explode();
+	}
+}
+
+void AExplodingEnemy::OnRep_Damaged() const
+{
+	if (MaterialInstance)
+	{
+		// Pulse the material.
+		MaterialInstance->SetScalarParameterValue(MaterialInstanceDamageParameterName, GetWorld()->GetTimeSeconds());
 	}
 }
 
@@ -191,7 +218,12 @@ void AExplodingEnemy::Explode()
 
 	bExploded = true;
 
-	Destroy();
+	// Cannot immediately destroy the enemy because the explosions effects don't have enough time to replicate. Some delay is needed.
+	SetLifeSpan(0.01f);
+	// Ensure the enemy is not visible, and has no collisions during the delay.
+	MeshComponent->SetVisibility(false, true);
+	MeshComponent->SetSimulatePhysics(false); // If simulate physics is true, setting no collisions throws an error.
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AExplodingEnemy::OnRep_Explode() const
