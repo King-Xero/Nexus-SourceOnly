@@ -11,6 +11,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/SphereComponent.h"
 #include "NexusCharacter.h"
+#include "Components/AudioComponent.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -47,6 +48,9 @@ AExplodingEnemy::AExplodingEnemy()
 	SphereComponent->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	SphereComponent->SetSphereRadius(ExplosionRadius);
 	SphereComponent->SetupAttachment(RootComponent);
+
+	MovementAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MovementAudioComponent"));
+	MovementAudioComponent->SetupAttachment(RootComponent);
 }
 
 // Called every frame
@@ -71,6 +75,9 @@ void AExplodingEnemy::Tick(float DeltaTime)
 
 		MeshComponent->AddForce(MovementForceDirection * MovementForce, NAME_None, bVelocityChange);
 	}
+
+	// Set the volume of the movement sound effect, depending on the enemy's current velocity.
+	MovementAudioComponent->SetVolumeMultiplier(FMath::GetMappedRangeValueClamped(TRange<float>(LowerVelocityRollingRange, UpperVelocityRollingRange), TRange<float>(LowerVolumeRollingRange, UpperVolumeRollingRange), GetVelocity().Size()));
 }
 
 void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -80,7 +87,7 @@ void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
 		ANexusCharacter* PlayerCharacter = Cast<ANexusCharacter>(OtherActor);
 		if (PlayerCharacter)
 		{
-			// If a player was overlapped, begin self-destruct;
+			// If a player was overlapped, begin self-destruct.
 
 			FStringFormatOrderedArguments LogArgs;
 			LogArgs.Add(FStringFormatArg(GetName()));
@@ -88,6 +95,10 @@ void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
 
 			FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {0} detected player {1}. Starting self destruct."), LogArgs));
 
+			// Play self destruct effect.
+			PlaySelfDestructSFX();
+			
+			// Start self destruct timer.
 			GetWorldTimerManager().SetTimer(TimerHandle_SelfDestruct, this, &AExplodingEnemy::Explode, SelfDestructTime, false);
 			bSelfDestruct = true;
 		}
@@ -118,6 +129,10 @@ void AExplodingEnemy::BeginPlay()
 	// Variables would not set correctly in the constructor, so have to be set here.
 	RadialForceComponent->Radius = ExplosionRadius;
 	RadialForceComponent->ImpulseStrength = RadialImpulseStrength;
+
+	// Set sound effect to be played.
+	MovementAudioComponent->SetSound(MovementSFX);
+	MovementAudioComponent->Play();
 }
 
 FVector AExplodingEnemy::GetNextPathPoint()
@@ -182,7 +197,10 @@ void AExplodingEnemy::Explode()
 void AExplodingEnemy::OnRep_Explode() const
 {
 	// Spawn particle effect for explosion.
-	PlayExplosionEffect();
+	PlayExplosionVFX();
+
+	// Spawn sound effect for explosion.
+	PlayExplosionSFX();
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
@@ -193,10 +211,26 @@ void AExplodingEnemy::OnRep_Explode() const
 #endif
 }
 
-void AExplodingEnemy::PlayExplosionEffect() const
+void AExplodingEnemy::PlayExplosionVFX() const
 {
 	if (ExplosionVFX)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation(), MeshComponent->GetComponentRotation());
+	}
+}
+
+void AExplodingEnemy::PlaySelfDestructSFX() const
+{
+	if (SelfDestructSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(SelfDestructSFX, RootComponent);
+	}
+}
+
+void AExplodingEnemy::PlayExplosionSFX() const
+{
+	if (ExplosionSFX)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSFX, GetActorLocation());
 	}
 }

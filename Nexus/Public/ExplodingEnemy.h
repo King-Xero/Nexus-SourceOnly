@@ -9,6 +9,7 @@
 class UNexusHealthComponent;
 class URadialForceComponent;
 class USphereComponent;
+class USoundCue;
 
 UCLASS()
 class NEXUS_API AExplodingEnemy : public APawn
@@ -88,10 +89,34 @@ protected:
 	USphereComponent* SphereComponent;
 
 	/**
+	 * \brief Component used to play movement sound effect.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAudioComponent* MovementAudioComponent;
+
+	/**
 	 * \brief Particle effect spawned at the enemy's location when it explodes.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
 	UParticleSystem* ExplosionVFX;
+
+	/**
+	 * \brief Sound effect spawned attached to the enemy when it starts to self destruct.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	USoundBase* SelfDestructSFX;
+
+	/**
+	 * \brief Sound effect spawned at the enemy's location when it explodes.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	USoundBase* ExplosionSFX;
+
+	/**
+	 * \brief Sound effect for enemy movement.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	USoundBase* MovementSFX;
 
 	/**
 	 * \brief The magnitude of the movement force applied to the enemy when moving in the direction of its next path point.
@@ -136,6 +161,29 @@ protected:
 	float SelfDestructTime = 3.0f;
 
 	/**
+	 * \brief The lower bound of the enemy velocity to be mapped to, mapped LowerVolumeRollingRange.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	float LowerVelocityRollingRange = 10.0f;
+	
+	/**
+	 * \brief The upper bound of the enemy velocity to be mapped to, mapped UpperVolumeRollingRange.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	float UpperVelocityRollingRange = 1000.0f;
+
+	/**
+	 * \brief The lower bound of the enemy movement volume to be mapped to LowerVelocityRollingRange.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	float LowerVolumeRollingRange = 0.1f;
+
+	/**
+	 * \brief The upper bound of the enemy movement volume to be mapped to UpperVelocityRollingRange.
+	 */
+	float UpperVolumeRollingRange = 2.0f;
+
+	/**
 	 * \brief The type of damage that the enemy inflicts.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
@@ -145,7 +193,17 @@ private:
 	/**
 	 * \brief Spawn particle effect for explosion.
 	 */
-	void PlayExplosionEffect() const;
+	void PlayExplosionVFX() const;
+
+	/**
+	 * \brief Spawn sound effect for self destruct.
+	 */
+	void PlaySelfDestructSFX() const;
+
+	/**
+	 * \brief Spawn sound effect for explosion.
+	 */
+	void PlayExplosionSFX() const;
 
 	/**
 	 * \brief Used to track if the enemy has exploded.
