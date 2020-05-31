@@ -1,6 +1,5 @@
 // Toyan Green © 2020
 
-
 #include "ExplodingBarrel.h"
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"

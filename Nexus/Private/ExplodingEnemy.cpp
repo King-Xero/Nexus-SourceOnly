@@ -1,6 +1,5 @@
 // Toyan Green © 2020
 
-
 #include "ExplodingEnemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
@@ -8,6 +7,12 @@
 #include "NavigationPath.h"
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
+#include "PhysicsEngine/RadialForceComponent.h"
+#include "Net/UnrealNetwork.h"
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "DrawDebugHelpers.h"
+#include "Nexus/Utils/ConsoleVariables.h"
+#endif
 
 // Sets default values
 AExplodingEnemy::AExplodingEnemy()
@@ -25,6 +30,13 @@ AExplodingEnemy::AExplodingEnemy()
 
 	// Initialise the health component
 	EnemyHealthComponent = CreateDefaultSubobject<UNexusHealthComponent>(TEXT("HealthComponent"));
+
+	RadialForceComponent = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComponent"));
+	RadialForceComponent->SetupAttachment(RootComponent);
+	RadialForceComponent->bImpulseVelChange = true;
+	// If auto activate is not set to false, the component will run update code that constantly applies forces.
+	RadialForceComponent->bAutoActivate = false;
+	RadialForceComponent->bIgnoreOwningActor = true;
 }
 
 // Called every frame
@@ -51,6 +63,14 @@ void AExplodingEnemy::Tick(float DeltaTime)
 	}
 }
 
+void AExplodingEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate the exploded flag so that we can replicate the explosion.
+	DOREPLIFETIME(AExplodingEnemy, bExploded);
+}
+
 // Called when the game starts or when spawned
 void AExplodingEnemy::BeginPlay()
 {
@@ -63,6 +83,10 @@ void AExplodingEnemy::BeginPlay()
 	EnemyHealthComponent->OnHealthChanged.AddDynamic(this, &AExplodingEnemy::HealthChanged);
 
 	MaterialInstance = MeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MeshComponent->GetMaterial(0));
+
+	// Variables would not set correctly in the constructor, so have to be set here.
+	RadialForceComponent->Radius = ExplosionRadius;
+	RadialForceComponent->ImpulseStrength = RadialImpulseStrength;
 }
 
 FVector AExplodingEnemy::GetNextPathPoint()
@@ -96,12 +120,49 @@ void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		// Pulse the material.
 		MaterialInstance->SetScalarParameterValue(MaterialInstanceDamageParameterName, GetWorld()->GetTimeSeconds());
 	}
-	
-	// If the enemy's health is 0 or less and not currently dead, the enemy should die.
-	if (0.0f >= Health && !bDead)
-	{
-		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {1} has died.."), LogArgs));
 
-		bDead = true;
+	// If the enemy's health is 0 or less and not currently exploded, the enemy should explode.
+	if (0.0f >= Health && !bExploded)
+	{
+		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Enemy {1} has exploded."), LogArgs));
+
+		Explode();
+	}
+}
+
+void AExplodingEnemy::Explode()
+{
+	// Apply damage to actors around the enemy.
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, EnemyDamageType, {}, this);
+
+	// Emit radial force.
+	RadialForceComponent->FireImpulse();
+
+	OnRep_Explode();
+
+	bExploded = true;
+
+	Destroy();
+}
+
+void AExplodingEnemy::OnRep_Explode() const
+{
+	// Spawn particle effect for explosion.
+	PlayExplosionEffect();
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
+	if (bDrawDebug)
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12.0f, FColor::Yellow, false, 1.0f, 0, 1.0f);
+	}
+#endif
+}
+
+void AExplodingEnemy::PlayExplosionEffect() const
+{
+	if (ExplosionVFX)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation(), MeshComponent->GetComponentRotation());
 	}
 }
