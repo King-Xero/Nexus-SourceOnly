@@ -53,13 +53,13 @@ protected:
 	/**
 	 * \brief The type of power up that this pick up spawns.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	UPROPERTY(EditInstanceOnly, Category = "PickupActor")
 	TSubclassOf<ANexusPowerUpActor> PowerUpClass;
 
 	/**
 	 * \brief Duration for power up to repsawn.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	UPROPERTY(EditAnywhere, Category = "PickupActor")
 	float PickUpCoolDown = 1.0f;
 
 	/**

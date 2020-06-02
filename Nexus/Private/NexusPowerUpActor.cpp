@@ -26,7 +26,7 @@ ANexusPowerUpActor::ANexusPowerUpActor()
 void ANexusPowerUpActor::ActivatePowerUp()
 {
 	// Set a timer to apply the power up effect.
-	if (PowerUpInterval > 1)
+	if (PowerUpInterval > 0)
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_PowerUp, this, &ANexusPowerUpActor::PowerUpTick, PowerUpInterval, true, 0.0f);
 	}
