@@ -3,6 +3,7 @@
 
 #include "NexusPowerUpActor.h"
 #include "Components/PointLightComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 
 // Sets default values
 ANexusPowerUpActor::ANexusPowerUpActor()
@@ -19,6 +20,8 @@ ANexusPowerUpActor::ANexusPowerUpActor()
 	LightComponent->SetCastShadows(false);
 	LightComponent->SetAttenuationRadius(100.0f);
 	LightComponent->SetupAttachment(RootComponent);
+
+	RotatingComponent = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingComponent"));
 	
 	TicksProcessed = 0;
 }
@@ -65,6 +68,9 @@ void ANexusPowerUpActor::BeginPlay()
 	}
 	// Set the light color.
 	LightComponent->SetLightColor(PowerUpColor);
+
+	// Set timer to make the power up "float".
+	GetWorldTimerManager().SetTimer(TimerHandle_Float, this, &ANexusPowerUpActor::Float, FloatInterval, true);
 }
 
 void ANexusPowerUpActor::PowerUpTick()
@@ -88,4 +94,18 @@ void ANexusPowerUpActor::PowerUpTick()
 		// Apply the power up effect.
 		ApplyPowerUpEffect();
 	}
+}
+
+void ANexusPowerUpActor::Float()
+{
+	// Get the current location.
+	FVector NewLocation = GetActorLocation();
+	// Get the current time.
+	const float WorldTime = GetWorld()->GetTimeSeconds();
+	// Calculate the height change using the current time and update interval
+	const float DeltaHeight = (FMath::Sin(WorldTime + FloatInterval) - FMath::Sin(WorldTime));
+	// Update new location using scale factor.
+	NewLocation.Z += DeltaHeight * FloatHeightChangeScale;
+	// Set new location.
+	SetActorLocation(NewLocation);
 }

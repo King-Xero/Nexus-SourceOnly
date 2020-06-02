@@ -7,6 +7,7 @@
 #include "NexusPowerUpActor.generated.h"
 
 class UPointLightComponent;
+class URotatingMovementComponent;
 
 UCLASS()
 class NEXUS_API ANexusPowerUpActor : public AActor
@@ -51,6 +52,12 @@ protected:
 	void PowerUpTick();
 
 	/**
+	 * \brief Timer callback used to float the power up.
+	 */
+	UFUNCTION()
+	void Float();
+
+	/**
 	 * \brief The visible mesh of the power up.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -61,6 +68,12 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UPointLightComponent* LightComponent;
+
+	/**
+	 * \brief Used to rotate the power up.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	URotatingMovementComponent* RotatingComponent;
 	
 	/**
 	 * \brief Interval between power up ticks.
@@ -92,6 +105,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PowerUps")
 	float PowerUpFlashMinimumEmissive = 0.2f;
 
+	/**
+	 * \brief Interval between float updates.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "PowerUps")
+	float FloatInterval = 0.016f;
+
+	/**
+	 * \brief Scale factor for floating height change.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "PowerUps")
+	float FloatHeightChangeScale = 20.0f;
+
 private:
 
 	/**
@@ -111,6 +136,11 @@ private:
 
 	// Used to track how many times the power up effect has been applied.
 	int TicksProcessed;
+
+	/**
+	 * \brief Handle for the timer used to "float" the power up;
+	 */
+	FTimerHandle TimerHandle_Float;
 
 	/**
 	 * \brief Name of parameter used to alter the color of the power up.
