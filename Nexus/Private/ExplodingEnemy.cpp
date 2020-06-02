@@ -186,12 +186,15 @@ void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 	LogArgs.Add(FStringFormatArg(HealthDelta));
 	LogArgs.Add(FStringFormatArg(GetName()));
 
-	FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("{0} damage inflicted to {1}."), LogArgs));
+	if (0.0f < HealthDelta)
+	{
+		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("{0} damage inflicted to {1}."), LogArgs));
 
-	OnRep_Damaged();
-	
-	// Value is set to trigger replication of damage effect. Value is not actually used as it would cause a delay in the material pulse.
-	LastTimeDamageTaken = GetWorld()->GetTimeSeconds();
+		OnRep_Damaged();
+
+		// Value is set to trigger replication of damage effect. Value is not actually used as it would cause a delay in the material pulse.
+		LastTimeDamageTaken = GetWorld()->GetTimeSeconds();
+	}	
 
 	// If the enemy's health is 0 or less and not currently exploded, the enemy should explode.
 	if (0.0f >= Health && !bExploded)

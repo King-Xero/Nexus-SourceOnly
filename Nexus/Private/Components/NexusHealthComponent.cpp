@@ -57,21 +57,31 @@ void UNexusHealthComponent::BeginPlay()
 
 void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	// Only deplete health if the damage amount is a positive value.
-	if (0 > DamageAmount)
-	{
-		checkf(false, TEXT("%hs called with invalid value: %f"), __FUNCTION__, DamageAmount);
-	}
-	else
+	// Ensure that health only changes whilst the owner still has health (is alive).
+	if (0.0f < CurrentHealth)
 	{
 		FStringFormatOrderedArguments LogArgs;
 		LogArgs.Add(FStringFormatArg(DamageAmount));
-		FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Damage inflicted: {0}"), LogArgs));
-		
+
+		if (0.0f < DamageAmount)
+		{
+			// If DamageAmount is positive, health is depleted. 
+			FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Health depleted: {0}"), LogArgs));
+		}
+		else
+		{
+			// If DamageAmount is negative, health is replenished.
+			FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Health replenished: {0}"), LogArgs));
+		}
+
 		// Ensure that the new health value is between 0 and max health.
 		CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
 
 		// Raise the health changed event.
 		OnHealthChanged.Broadcast(this, CurrentHealth, DamageAmount, DamageType, InstigatedBy, DamageCauser);
 	}
+	else
+	{
+		FNexusLogging::Log(ELogLevel::DEBUG, TEXT("Component owner is already dead."));
+	}	
 }
