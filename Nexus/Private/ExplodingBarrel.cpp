@@ -74,7 +74,10 @@ void AExplodingBarrel::HealthChanged(UNexusHealthComponent* HealthComponent, flo
 		FNexusLogging::Log(ELogLevel::DEBUG, "Barrel has exploded.");
 
 		// Set barrel instigator to damage instigator, so we know who caused the barrel to explode when inflicting damage from the barrel.
-		SetInstigator(InstigatedBy->GetPawn());
+		if (InstigatedBy)
+		{
+			SetInstigator(InstigatedBy->GetPawn());
+		}		
 
 		Explode();
 
@@ -91,10 +94,12 @@ void AExplodingBarrel::Explode()
 	// Must be set before applying radial damage or we can get caught in an infinite loop.
 	bExploded = true;
 	
-	AActor* BarrelOwner = GetInstigator();
+	AActor* ExplosionInstigator = GetInstigator();
+
+	AController* InstigatorController = ExplosionInstigator ? ExplosionInstigator->GetInstigatorController() : nullptr;
 	
 	// Apply damage to actors around the barrel.
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, BarrelDamageType, {}, this, BarrelOwner->GetInstigatorController());
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, BarrelDamageType, {}, this, InstigatorController);
 	
 	// Launch barrel upwards.
 	MeshComponent->AddImpulse(FVector::UpVector * VerticalImpulseStrength, NAME_None, true);
