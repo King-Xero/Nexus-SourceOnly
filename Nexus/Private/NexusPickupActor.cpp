@@ -4,6 +4,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/DecalComponent.h"
 #include "NexusPowerUpActor.h"
+#include "NexusCharacter.h"
 
 // Sets default values
 ANexusPickupActor::ANexusPickupActor()
@@ -29,9 +30,10 @@ void ANexusPickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	if (ROLE_Authority == GetLocalRole() && SpawnedPowerUp)
+	// Only characters can collect the pick ups.
+	if (OtherActor->IsA<ANexusCharacter>() && ROLE_Authority == GetLocalRole() && SpawnedPowerUp)
 	{
-		SpawnedPowerUp->ActivatePowerUp();
+		SpawnedPowerUp->ActivatePowerUp(OtherActor);
 		SpawnedPowerUp = nullptr;
 
 		// Set timer to respawn the power up.

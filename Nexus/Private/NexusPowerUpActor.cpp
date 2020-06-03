@@ -30,8 +30,10 @@ ANexusPowerUpActor::ANexusPowerUpActor()
 	SetReplicates(true);
 }
 
-void ANexusPowerUpActor::ActivatePowerUp()
+void ANexusPowerUpActor::ActivatePowerUp(AActor* ActivatingActor)
 {
+	PowerUpActivatingActor = ActivatingActor;
+	
 	// Set a timer to apply the power up effect.
 	if (PowerUpInterval > 0)
 	{

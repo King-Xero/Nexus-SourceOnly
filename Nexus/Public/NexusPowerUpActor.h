@@ -20,8 +20,9 @@ public:
 		
 	/**
 	 * \brief Start processing the power up.
+	 * \param ActivatingActor The actor that activated the power up.
 	 */
-	void ActivatePowerUp();
+	void ActivatePowerUp(AActor* ActivatingActor);
 
 	/**
 	 * \brief Stop processing the power up.
@@ -127,6 +128,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "PowerUps")
 	float FloatHeightChangeScale = 20.0f;
+
+	/**
+	 * \brief Cached actor that activated the power up.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "PowerUps")
+	AActor* PowerUpActivatingActor;
 
 private:
 
