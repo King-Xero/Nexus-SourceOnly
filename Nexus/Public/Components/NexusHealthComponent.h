@@ -7,6 +7,7 @@
 #include "NexusHealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UNexusHealthComponent*, HealthComponent, float, Health, float, HealthDelta, const UDamageType*, DamageType, AController*, InstigatedBy, AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCurrentHealthReplicatedUpdateEvent);
 
 UCLASS( ClassGroup=(Nexus), meta=(BlueprintSpawnableComponent) )
 class NEXUS_API UNexusHealthComponent : public UActorComponent
@@ -18,8 +19,8 @@ public:
 	UNexusHealthComponent();
 
 	/**
-	 * \brief Get the max health for the health component
-	 * \return Value for max health
+	 * \brief Get the max health for the health component.
+	 * \return Value for max health.
 	 */
 	UFUNCTION()
 	const float& GetMaxHealth() const;
@@ -31,17 +32,20 @@ public:
 	UFUNCTION()
 	const float& GetCurrentHealth() const;
 
+	/**
+	 * \brief Event used to broadcast detailed health updates.
+	 */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 
+	/**
+	 * \brief Event used to broadcast current health updates on replicated clients.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FCurrentHealthReplicatedUpdateEvent OnCurrentHealthUpdated;
+
 protected:
 
-	/**
-	 * \brief The maximum amount of health available
-	 */
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
-	float MaxHealth = 100.0f;
-	
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
@@ -57,11 +61,23 @@ protected:
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
-private:
+	/**
+	 * \brief The maximum amount of health available.
+	 */
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	float MaxHealth = 100.0f;
 
 	/**
 	 * \brief The current amount of health available.
 	 */
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
-	float CurrentHealth;		
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealthUpdated, BlueprintReadOnly, VisibleAnywhere, Category = "Health")
+	float CurrentHealth;
+
+private:
+
+	/**
+	 * \brief Replicate current health updates.
+	 */
+	UFUNCTION()
+	void OnRep_CurrentHealthUpdated() const;	
 };

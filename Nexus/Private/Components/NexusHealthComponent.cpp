@@ -77,6 +77,9 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 		// Ensure that the new health value is between 0 and max health.
 		CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
 
+		// Broadcast health update locally.
+		OnRep_CurrentHealthUpdated();
+
 		// Raise the health changed event.
 		OnHealthChanged.Broadcast(this, CurrentHealth, DamageAmount, DamageType, InstigatedBy, DamageCauser);
 	}
@@ -84,4 +87,10 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 	{
 		FNexusLogging::Log(ELogLevel::DEBUG, TEXT("Component owner is already dead."));
 	}	
+}
+
+void UNexusHealthComponent::OnRep_CurrentHealthUpdated() const
+{
+	// Broadcast current health update to replicated clients.
+	OnCurrentHealthUpdated.Broadcast();
 }
