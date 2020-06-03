@@ -126,9 +126,9 @@ void ANexusPowerUpActor::Float()
 	// Get the current location.
 	FVector NewLocation = GetActorLocation();
 	// Get the current time.
-	const float WorldTime = GetWorld()->GetTimeSeconds();
+	const float ActorTime = GetGameTimeSinceCreation();
 	// Calculate the height change using the current time and update interval
-	const float DeltaHeight = (FMath::Sin(WorldTime + FloatInterval) - FMath::Sin(WorldTime));
+	const float DeltaHeight = (FMath::Sin(ActorTime + FloatInterval) - FMath::Sin(ActorTime));
 	// Update new location using scale factor.
 	NewLocation.Z += DeltaHeight * FloatHeightChangeScale;
 	// Set new location.
