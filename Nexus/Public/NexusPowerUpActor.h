@@ -22,21 +22,26 @@ public:
 	 * \brief Start processing the power up.
 	 */
 	void ActivatePowerUp();
+
+	/**
+	 * \brief Stop processing the power up.
+	 */
+	void DeactivatePowerUp();
 	
 	/**
-	 * \brief Activate the power up.
+	 * \brief Hook to implement power up activation in blueprint.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "PowerUps")
 	void OnActivated();
 
 	/**
-	 * \brief Deactivate the power up.
+	 * \brief Hook to implement power up deactivation in blueprint.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "PowerUps")
 	void OnDeactivated();
 
 	/**
-	 * \brief Apply the power up effect.
+	 * \brief Hook to implement power up effect to be applied in blueprint.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "PowerUps")
 	void ApplyPowerUpEffect();
@@ -56,6 +61,12 @@ protected:
 	 */
 	UFUNCTION()
 	void Float();
+
+	/**
+	 * \brief Replicate power up activation.
+	 */
+	UFUNCTION()
+	void OnRep_PowerUpActivated();
 
 	/**
 	 * \brief The visible mesh of the power up.
@@ -120,6 +131,12 @@ protected:
 private:
 
 	/**
+	 * \brief Method to execute functionality for power up activation.
+	 * \param bActive Activation state of the power up.
+	 */
+	void OnPowerUpStateChanged(bool bActive);
+	
+	/**
 	 * \brief Instance of the mesh's material, required to make changes to material instance at run time.
 	 */
 	UMaterialInstanceDynamic* PowerUpMaterialInstance;
@@ -141,6 +158,12 @@ private:
 	 * \brief Handle for the timer used to "float" the power up;
 	 */
 	FTimerHandle TimerHandle_Float;
+
+	/**
+	 * \brief Used to track and replicate the power up activation.
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_PowerUpActivated)
+	bool bPowerUpActivated;
 
 	/**
 	 * \brief Name of parameter used to alter the color of the power up.

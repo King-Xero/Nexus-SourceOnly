@@ -20,20 +20,23 @@ ANexusPickupActor::ANexusPickupActor()
 	DecalComponent->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
 	DecalComponent->DecalSize = FVector(65.0f, 75.0f, 75.0f);
 	DecalComponent->SetupAttachment(RootComponent);
+
+	// Needs to be set to replicate explosion across all clients.
+	SetReplicates(true);
 }
 
 void ANexusPickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	if (SpawnedPowerUp)
+	if (ROLE_Authority == GetLocalRole() && SpawnedPowerUp)
 	{
 		SpawnedPowerUp->ActivatePowerUp();
 		SpawnedPowerUp = nullptr;
 
 		// Set timer to respawn the power up.
 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnPowerUp, this, &ANexusPickupActor::SpawnPowerUp, PickUpCoolDown);
-	}
+	}	
 }
 
 // Called when the game starts or when spawned
@@ -41,8 +44,12 @@ void ANexusPickupActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Pick up should start with power up spawned.
-	SpawnPowerUp();
+	// Should only be spawned on the server authority
+	if (ROLE_Authority == GetLocalRole())
+	{
+		// Pick up should start with power up spawned.
+		SpawnPowerUp();
+	}	
 }
 
 void ANexusPickupActor::SpawnPowerUp()

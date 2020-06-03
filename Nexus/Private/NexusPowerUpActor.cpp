@@ -4,6 +4,7 @@
 #include "NexusPowerUpActor.h"
 #include "Components/PointLightComponent.h"
 #include "GameFramework/RotatingMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ANexusPowerUpActor::ANexusPowerUpActor()
@@ -24,6 +25,9 @@ ANexusPowerUpActor::ANexusPowerUpActor()
 	RotatingComponent = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingComponent"));
 	
 	TicksProcessed = 0;
+
+	// Needs to be set to replicate explosion across all clients.
+	SetReplicates(true);
 }
 
 void ANexusPowerUpActor::ActivatePowerUp()
@@ -39,9 +43,34 @@ void ANexusPowerUpActor::ActivatePowerUp()
 		PowerUpTick();
 	}
 
-	// Mesh and light should be hidden off when the power up is collected/activated.
-	MeshComponent->SetVisibility(false);
-	LightComponent->SetVisibility(false);
+	// Set flag to replicate activation.
+	bPowerUpActivated = true;
+	
+	// Activate power up locally.
+	OnRep_PowerUpActivated();	
+}
+
+void ANexusPowerUpActor::DeactivatePowerUp()
+{
+	// Set flag to replicate deactivation.
+	bPowerUpActivated = false;
+
+	// Deactivate power up locally.
+	OnRep_PowerUpActivated();
+
+	// The power up has expired, so deactivate the effect.
+	OnDeactivated();
+
+	// Clear the timer so we stop processing the power up.
+	GetWorldTimerManager().ClearTimer(TimerHandle_PowerUp);
+}
+
+void ANexusPowerUpActor::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate the activated flag so that we can replicate the power up activation.
+	DOREPLIFETIME(ANexusPowerUpActor, bPowerUpActivated);
 }
 
 // Called when the game starts or when spawned
@@ -83,11 +112,7 @@ void ANexusPowerUpActor::PowerUpTick()
 	
 	if (++TicksProcessed > TotalNumberOfTicks)
 	{
-		// The power up has expired, so deactivate the effect.
-		OnDeactivated();
-
-		// Clear the timer so we stop processing the power up.
-		GetWorldTimerManager().ClearTimer(TimerHandle_PowerUp);
+		DeactivatePowerUp();
 	}
 	else
 	{
@@ -108,4 +133,25 @@ void ANexusPowerUpActor::Float()
 	NewLocation.Z += DeltaHeight * FloatHeightChangeScale;
 	// Set new location.
 	SetActorLocation(NewLocation);
+}
+
+void ANexusPowerUpActor::OnRep_PowerUpActivated()
+{
+	OnPowerUpStateChanged(bPowerUpActivated);
+}
+
+void ANexusPowerUpActor::OnPowerUpStateChanged(bool bActive)
+{
+	// Run this functionality if the power up was activated
+	if (bActive)
+	{
+		// Mesh and light should be hidden off when the power up is collected/activated.
+		MeshComponent->SetVisibility(false);
+		LightComponent->SetVisibility(false);
+	}
+	else
+	{
+		// Power up should be destroyed when deactivated.
+		Destroy();
+	}
 }
