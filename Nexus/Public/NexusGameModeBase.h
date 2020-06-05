@@ -47,6 +47,17 @@ protected:
 	void CheckEnemiesAlive();
 
 	/**
+	 * \brief Check if there are any alive players.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Waves")
+	void CheckPlayersAlive();
+
+	/**
+	 * \brief End the game/match.
+	 */
+	void GameOver();
+
+	/**
 	 * \brief The starting number of enemies used to calculate total enemies in a wave.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
@@ -63,6 +74,12 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
 	float WaveDelayTime = 10.0f;
+
+	/**
+	 * \brief Interval at which the check to see if any players are alive is run.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
+	float PlayerCheckRate = 1.0f;
 
 private:
 
@@ -90,4 +107,9 @@ private:
 	 * \brief Handle used to manage timer that starts the next wave.
 	 */
 	FTimerHandle TimerHandle_StartNextWave;
+
+	/**
+	 * \brief Handle used to manage timer that checks if players are alive.
+	 */
+	FTimerHandle TimerHandle_AlivePlayers;
 };

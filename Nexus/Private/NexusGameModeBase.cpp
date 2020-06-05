@@ -3,6 +3,7 @@
 #include "NexusGameModeBase.h"
 #include "EngineUtils.h"
 #include "Components/NexusHealthComponent.h"
+#include "Nexus/Utils/Logging/NexusLogging.h"
 
 /**
  * \brief Start the game/match.
@@ -11,6 +12,9 @@
 void ANexusGameModeBase::StartPlay()
 {
 	Super::StartPlay();
+
+	// Start looping timer to check if there are any players alive.
+	GetWorldTimerManager().SetTimer(TimerHandle_AlivePlayers, this, &ANexusGameModeBase::CheckPlayersAlive, PlayerCheckRate, true);
 
 	PrepareForNextWave();
 }
@@ -28,7 +32,7 @@ void ANexusGameModeBase::StartWave()
 
 void ANexusGameModeBase::EndWave()
 {
-	// Stop timer that spawns enemies
+	// Stop timer that spawns enemies.
 	GetWorldTimerManager().ClearTimer(TimerHandle_EnemySpawner);
 }
 
@@ -67,6 +71,48 @@ void ANexusGameModeBase::CheckEnemiesAlive()
 			PrepareForNextWave();
 		}
 	}	
+}
+
+void ANexusGameModeBase::CheckPlayersAlive()
+{
+	bool bPlayerAlive = false;
+
+	for (TActorIterator<APlayerController> PlayerIterator(GetWorld()); PlayerIterator; ++PlayerIterator)
+	{
+		// Dereference the player controller from the iterator.
+		APlayerController* PlayerToCheck = *PlayerIterator;
+		// Check if the player is valid.
+		if (PlayerToCheck && PlayerToCheck->GetPawn())
+		{
+			APawn* PawnToCheck = PlayerToCheck->GetPawn();			
+			UNexusHealthComponent* PawnHealthComponent = Cast<UNexusHealthComponent>(PawnToCheck->GetComponentByClass(UNexusHealthComponent::StaticClass()));
+			// Player pawn should always have a health component, so we should validate.
+			if (ensure(PawnHealthComponent) && 0.0f < PawnHealthComponent->GetCurrentHealth())
+			{
+				// Found an alive enemy, we should exit the loop immediately.
+				bPlayerAlive = true;
+				break;
+			}
+		}
+	}
+
+	if (!bPlayerAlive)
+	{
+		// If there are no alive enemies, we should prepare the next wave.
+		GameOver();
+	}
+}
+
+void ANexusGameModeBase::GameOver()
+{
+	// Stop looping timer to check if there are any players alive.
+	GetWorldTimerManager().ClearTimer(TimerHandle_AlivePlayers);
+	
+	EndWave();
+
+	// ToDo finish the match, and present "game over" screen to players.
+
+	FNexusLogging::Log(ELogLevel::INFO, TEXT("All players dead. Game Over!!!"));
 }
 
 void ANexusGameModeBase::EnemySpawnerElapsed()
