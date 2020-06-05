@@ -6,15 +6,16 @@
 #include "GameFramework/GameModeBase.h"
 #include "NexusGameModeBase.generated.h"
 
-/**
- * 
- */
+enum class EWaveState : uint8;
+
 UCLASS()
 class NEXUS_API ANexusGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
+	ANexusGameModeBase();
+	
 	virtual void StartPlay() override;
 
 protected:
@@ -87,6 +88,14 @@ private:
 	 * \brief Callback for the timer used to spawn enemies.
 	 */
 	void EnemySpawnerElapsed();
+
+	
+	/**
+	 * \brief Set the new wave state in the game mode game state.
+	 * \param NewWaveState The wave state that the match is entering.
+	 * @note The game mode game state is used to replicate game mode data across networked clients.
+	 */
+	void SetWaveState(EWaveState NewWaveState);
 	
 	/**
 	 * \brief The current wave number.

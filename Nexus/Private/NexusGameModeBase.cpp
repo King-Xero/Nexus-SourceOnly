@@ -4,6 +4,13 @@
 #include "EngineUtils.h"
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
+#include "NexusGameState.h"
+
+ANexusGameModeBase::ANexusGameModeBase()
+{
+	// Set game state class to replicate data to clients using created class.
+	GameStateClass = ANexusGameState::StaticClass();
+}
 
 /**
  * \brief Start the game/match.
@@ -28,17 +35,26 @@ void ANexusGameModeBase::StartWave()
 
 	// Start timer that repeatedly spawns enemies.
 	GetWorldTimerManager().SetTimer(TimerHandle_EnemySpawner, this, &ANexusGameModeBase::EnemySpawnerElapsed, EnemySpawnRate, true, 0.0f);
+
+	// New wave is now in progress.
+	SetWaveState(EWaveState::WaveInProgress);
 }
 
 void ANexusGameModeBase::EndWave()
 {
 	// Stop timer that spawns enemies.
 	GetWorldTimerManager().ClearTimer(TimerHandle_EnemySpawner);
+
+	// Waiting for players to kill all enemies.
+	SetWaveState(EWaveState::WaitingToComplete);
 }
 
 void ANexusGameModeBase::PrepareForNextWave()
 {
 	GetWorldTimerManager().SetTimer(TimerHandle_StartNextWave, this, &ANexusGameModeBase::StartWave, WaveDelayTime);
+
+	// Waiting for the next wave to start.
+	SetWaveState(EWaveState::PreparingNextWave);
 }
 
 void ANexusGameModeBase::CheckEnemiesAlive()
@@ -67,6 +83,9 @@ void ANexusGameModeBase::CheckEnemiesAlive()
 
 		if (!bEnemyAlive)
 		{
+			// All enemies have been defeated, the wave is complete.
+			SetWaveState(EWaveState::WaveComplete);
+			
 			// If there are no alive enemies, we should prepare the next wave.
 			PrepareForNextWave();
 		}
@@ -112,6 +131,9 @@ void ANexusGameModeBase::GameOver()
 
 	// ToDo finish the match, and present "game over" screen to players.
 
+	// The match has ended.
+	SetWaveState(EWaveState::GameOver);
+
 	FNexusLogging::Log(ELogLevel::INFO, TEXT("All players dead. Game Over!!!"));
 }
 
@@ -123,5 +145,16 @@ void ANexusGameModeBase::EnemySpawnerElapsed()
 	if (0 >= --EnemiesToSpawn)
 	{
 		EndWave();
+	}
+}
+
+void ANexusGameModeBase::SetWaveState(EWaveState NewWaveState)
+{
+	ANexusGameState* MatchGameState = GetGameState<ANexusGameState>();
+
+	if (ensureAlways(MatchGameState))
+	{
+		// Set the wave state in the game state, so that it is replicated to networked clients.
+		MatchGameState->SetWaveState(NewWaveState);
 	}
 }
