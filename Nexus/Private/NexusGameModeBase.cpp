@@ -24,9 +24,6 @@ void ANexusGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	// Start looping timer to check if there are any players alive.
-	GetWorldTimerManager().SetTimer(TimerHandle_AlivePlayers, this, &ANexusGameModeBase::CheckPlayersAlive, PlayerCheckRate, true);
-
 	PrepareForNextWave();
 }
 
@@ -133,9 +130,6 @@ void ANexusGameModeBase::CheckPlayersAlive()
 
 void ANexusGameModeBase::GameOver()
 {
-	// Stop looping timer to check if there are any players alive.
-	GetWorldTimerManager().ClearTimer(TimerHandle_AlivePlayers);
-	
 	EndWave();
 
 	// ToDo finish the match, and present "game over" screen to players.
@@ -159,31 +153,50 @@ void ANexusGameModeBase::EnemySpawnerElapsed()
 
 void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* InstigatingController, AActor* DeathCauser)
 {
+	// When an actor is killed, check if players and enemies are alive.
+	CheckPlayersAlive();
+	CheckEnemiesAlive();
+	
 	APawn* KilledPawn = Cast<APawn>(KilledActor);
 
-	// Score is not awarded for killing other players.
-	if (KilledPawn && !KilledPawn->IsPlayerControlled() && InstigatingController)
+	
+	if (KilledPawn)
 	{
-		APawn* InstigatingPawn = InstigatingController->GetPawn();
-		if (InstigatingPawn)
+		if (KilledPawn->IsPlayerControlled())
 		{
-			ANexusPlayerState* InstigatingPlayerState = InstigatingPawn->GetPlayerStateChecked<ANexusPlayerState>();
-			if (InstigatingPlayerState)
-			{
-				// Award instigating player points.
-				InstigatingPlayerState->AddScore(10);
-
-				FStringFormatOrderedArguments LogArgs;				
-				LogArgs.Add(FStringFormatArg(InstigatingPawn->GetName()));
-				LogArgs.Add(FStringFormatArg(KilledPawn->GetName()));
-				LogArgs.Add(FStringFormatArg(10));
-				LogArgs.Add(FStringFormatArg(InstigatingPlayerState->GetScore()));
-				FNexusLogging::Log(ELogLevel::TRACE, FString::Format(TEXT("{0} killed {1}. {2} points awarded. Total score: {3}."), LogArgs));
-				
-				// ToDo Add an interface to pawns that has the amounts of points that they are worth. 
-			}
+			// A player was killed, so we should check if there are any still alive.
+			CheckPlayersAlive();
+			// Score is not awarded for killing other players.
 		}
-	}	
+		else
+		{
+			// An enemy was killed, so we should check if there are any still alive.
+			CheckEnemiesAlive();
+			
+			if (InstigatingController)
+			{
+				APawn* InstigatingPawn = InstigatingController->GetPawn();
+				if (InstigatingPawn)
+				{
+					ANexusPlayerState* InstigatingPlayerState = InstigatingPawn->GetPlayerStateChecked<ANexusPlayerState>();
+					if (InstigatingPlayerState)
+					{
+						// Award instigating player points.
+						InstigatingPlayerState->AddScore(10);
+
+						FStringFormatOrderedArguments LogArgs;
+						LogArgs.Add(FStringFormatArg(InstigatingPawn->GetName()));
+						LogArgs.Add(FStringFormatArg(KilledPawn->GetName()));
+						LogArgs.Add(FStringFormatArg(10));
+						LogArgs.Add(FStringFormatArg(InstigatingPlayerState->GetScore()));
+						FNexusLogging::Log(ELogLevel::TRACE, FString::Format(TEXT("{0} killed {1}. {2} points awarded. Total score: {3}."), LogArgs));
+
+						// ToDo Add an interface to pawns that has the amounts of points that they are worth.
+					}
+				}
+			}
+		}		
+	}
 }
 
 void ANexusGameModeBase::SetWaveState(EWaveState NewWaveState)

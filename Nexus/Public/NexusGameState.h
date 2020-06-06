@@ -23,7 +23,7 @@ enum class EWaveState : uint8
 	/**
 	 * \brief Wave in progress, with enemies being spawned.
 	 */
-	WaveInProgress		UMETA(DisplayName = "Wave in progrss"),
+	WaveInProgress		UMETA(DisplayName = "Wave in progress"),
 	/**
 	 * \brief Wave in progress, waiting for players to kill remaining enemies.
 	 */

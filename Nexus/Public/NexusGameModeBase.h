@@ -137,9 +137,4 @@ private:
 	 * \brief Handle used to manage timer that starts the next wave.
 	 */
 	FTimerHandle TimerHandle_StartNextWave;
-
-	/**
-	 * \brief Handle used to manage timer that checks if players are alive.
-	 */
-	FTimerHandle TimerHandle_AlivePlayers;
 };
