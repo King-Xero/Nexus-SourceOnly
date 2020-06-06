@@ -4,6 +4,7 @@
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "Net/UnrealNetwork.h"
+#include "NexusGameModeBase.h"
 
 // Sets default values for this component's properties
 UNexusHealthComponent::UNexusHealthComponent()
@@ -58,7 +59,7 @@ void UNexusHealthComponent::BeginPlay()
 void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	// Ensure that health only changes whilst the owner still has health (is alive).
-	if (0.0f < CurrentHealth)
+	if (0.0f < CurrentHealth && !bDead)
 	{
 		FStringFormatOrderedArguments LogArgs;
 		LogArgs.Add(FStringFormatArg(DamageAmount));
@@ -77,8 +78,22 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 		// Ensure that the new health value is between 0 and max health.
 		CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.0f, MaxHealth);
 
+		// Check if the owner is dead.
+		bDead = 0.0f >= CurrentHealth;
+		
 		// Broadcast health update locally.
 		OnRep_CurrentHealthUpdated();
+		
+		if (bDead)
+		{
+			// If the actor has died, we should inform the game mode.
+			ANexusGameModeBase* GameMode = Cast<ANexusGameModeBase>(GetWorld()->GetAuthGameMode());
+			if (GameMode)
+			{
+				// The owner has been killed by the damage causer.
+				GameMode->OnActorKilled.Broadcast(GetOwner(), InstigatedBy, DamageCauser);
+			}
+		}		
 
 		// Raise the health changed event.
 		OnHealthChanged.Broadcast(this, CurrentHealth, DamageAmount, DamageType, InstigatedBy, DamageCauser);

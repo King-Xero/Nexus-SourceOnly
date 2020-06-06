@@ -8,6 +8,8 @@
 
 enum class EWaveState : uint8;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnActorKilled, AActor*, KilledActor, AController*, InstigatingController, AActor*, DeathCauser);
+
 UCLASS()
 class NEXUS_API ANexusGameModeBase : public AGameModeBase
 {
@@ -18,8 +20,19 @@ public:
 	
 	virtual void StartPlay() override;
 
+	/**
+	 * \brief Event used to broadcast when an actor has been killed.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnActorKilled OnActorKilled;
+
 protected:
 
+	/**
+	 * \brief Called when the game starts.
+	 */
+	virtual void BeginPlay() override;
+	
 	/**
 	 * \brief Hook to spawn an enemy in blueprint.
 	 */
@@ -89,6 +102,14 @@ private:
 	 */
 	void EnemySpawnerElapsed();
 
+	/**
+	 * \brief Called when the OnActorKilled event is broadcast.
+	 * \param KilledActor The actor that was killed.
+	 * \param InstigatingController The controller that killed KilledActor.
+	 * \param DeathCauser The actor that killed KilledActor.
+	 */
+	UFUNCTION()
+	void ActorKilled(AActor* KilledActor, AController* InstigatingController, AActor* DeathCauser);
 	
 	/**
 	 * \brief Set the new wave state in the game mode game state.

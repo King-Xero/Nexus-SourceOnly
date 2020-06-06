@@ -76,6 +76,11 @@ protected:
 private:
 
 	/**
+	 * \brief Used to track if the owner is dead.
+	 */
+	bool bDead = false;
+
+	/**
 	 * \brief Replicate current health updates.
 	 */
 	UFUNCTION()

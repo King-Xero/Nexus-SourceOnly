@@ -5,11 +5,15 @@
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "NexusGameState.h"
+#include "NexusPlayerState.h"
 
 ANexusGameModeBase::ANexusGameModeBase()
 {
 	// Set game state class to replicate data to clients using created class.
 	GameStateClass = ANexusGameState::StaticClass();
+
+	// Set player state class to assign player data using created class.
+	PlayerStateClass = ANexusPlayerState::StaticClass();
 }
 
 /**
@@ -24,6 +28,11 @@ void ANexusGameModeBase::StartPlay()
 	GetWorldTimerManager().SetTimer(TimerHandle_AlivePlayers, this, &ANexusGameModeBase::CheckPlayersAlive, PlayerCheckRate, true);
 
 	PrepareForNextWave();
+}
+
+void ANexusGameModeBase::BeginPlay()
+{
+	OnActorKilled.AddDynamic(this, &ANexusGameModeBase::ActorKilled);
 }
 
 void ANexusGameModeBase::StartWave()
@@ -146,6 +155,35 @@ void ANexusGameModeBase::EnemySpawnerElapsed()
 	{
 		EndWave();
 	}
+}
+
+void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* InstigatingController, AActor* DeathCauser)
+{
+	APawn* KilledPawn = Cast<APawn>(KilledActor);
+
+	// Score is not awarded for killing other players.
+	if (KilledPawn && !KilledPawn->IsPlayerControlled() && InstigatingController)
+	{
+		APawn* InstigatingPawn = InstigatingController->GetPawn();
+		if (InstigatingPawn)
+		{
+			ANexusPlayerState* InstigatingPlayerState = InstigatingPawn->GetPlayerStateChecked<ANexusPlayerState>();
+			if (InstigatingPlayerState)
+			{
+				// Award instigating player points.
+				InstigatingPlayerState->AddScore(10);
+
+				FStringFormatOrderedArguments LogArgs;				
+				LogArgs.Add(FStringFormatArg(InstigatingPawn->GetName()));
+				LogArgs.Add(FStringFormatArg(KilledPawn->GetName()));
+				LogArgs.Add(FStringFormatArg(10));
+				LogArgs.Add(FStringFormatArg(InstigatingPlayerState->GetScore()));
+				FNexusLogging::Log(ELogLevel::TRACE, FString::Format(TEXT("{0} killed {1}. {2} points awarded. Total score: {3}."), LogArgs));
+				
+				// ToDo Add an interface to pawns that has the amounts of points that they are worth. 
+			}
+		}
+	}	
 }
 
 void ANexusGameModeBase::SetWaveState(EWaveState NewWaveState)
