@@ -59,6 +59,9 @@ void ANexusGameModeBase::PrepareForNextWave()
 {
 	GetWorldTimerManager().SetTimer(TimerHandle_StartNextWave, this, &ANexusGameModeBase::StartWave, WaveDelayTime);
 
+	// Respawn any players that dies during the previous wave.
+	RepsawnDeadPlayers();
+	
 	// Waiting for the next wave to start.
 	SetWaveState(EWaveState::PreparingNextWave);
 }
@@ -138,6 +141,21 @@ void ANexusGameModeBase::GameOver()
 	SetWaveState(EWaveState::GameOver);
 
 	FNexusLogging::Log(ELogLevel::INFO, TEXT("All players dead. Game Over!!!"));
+}
+
+void ANexusGameModeBase::RepsawnDeadPlayers()
+{
+	for (TActorIterator<APlayerController> PlayerIterator(GetWorld()); PlayerIterator; ++PlayerIterator)
+	{
+		// Dereference the player controller from the iterator.
+		APlayerController* PlayerToCheck = *PlayerIterator;
+		// Check if the player is valid.
+		if (PlayerToCheck && !PlayerToCheck->GetPawn())
+		{
+			// Spawn the player.
+			RestartPlayer(PlayerToCheck);
+		}
+	}
 }
 
 void ANexusGameModeBase::EnemySpawnerElapsed()

@@ -72,6 +72,11 @@ protected:
 	void GameOver();
 
 	/**
+	 * \brief Restart players that have died.
+	 */
+	void RepsawnDeadPlayers();
+
+	/**
 	 * \brief The starting number of enemies used to calculate total enemies in a wave.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
