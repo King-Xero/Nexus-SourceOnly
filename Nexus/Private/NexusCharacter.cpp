@@ -44,17 +44,6 @@ void ANexusCharacter::Tick(float DeltaTime)
 	SetAimDownSight(DeltaTime);
 }
 
-void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// Because weapon is only spawned on the server, we have to ensure that it is replicated, so the clients can use it.
-	DOREPLIFETIME(ANexusCharacter, CurrentWeapon);
-
-	// Replicate the dead flag so that we can replicate the death animation.
-	DOREPLIFETIME(ANexusCharacter, bDead);
-}
-
 // Called to bind functionality to input
 void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -92,6 +81,33 @@ FVector ANexusCharacter::GetPawnViewLocation() const
 bool ANexusCharacter::IsDead() const
 {
 	return bDead;
+}
+
+void ANexusCharacter::StartShooting()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StartFiring();
+	}
+}
+
+void ANexusCharacter::StopShooting()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StopFiring();
+	}
+}
+
+void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Because weapon is only spawned on the server, we have to ensure that it is replicated, so the clients can use it.
+	DOREPLIFETIME(ANexusCharacter, CurrentWeapon);
+
+	// Replicate the dead flag so that we can replicate the death animation.
+	DOREPLIFETIME(ANexusCharacter, bDead);
 }
 
 // Called when the game starts or when spawned
@@ -168,22 +184,6 @@ void ANexusCharacter::EndADS()
 {
 	// "Zoom" the camera out.
 	bAimDownSight = false;
-}
-
-void ANexusCharacter::StartShooting()
-{
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->StartFiring();
-	}
-}
-
-void ANexusCharacter::StopShooting()
-{
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->StopFiring();
-	}
 }
 
 void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)

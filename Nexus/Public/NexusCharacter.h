@@ -38,7 +38,66 @@ public:
 	 */
 	bool IsDead() const;
 
+	/**
+	 * \brief Make the character start firing the currently equipped weapon.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void StartShooting();
+
+	/**
+	 * \brief Make the character stop firing the currently equipped weapon.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void StopShooting();
+
 protected:
+	
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	/**
+	 * \brief Moves the character forward or backward, depending on axis value.
+	 * \param fAxisValue Value of the input axis.
+	 */
+	void MoveForward(float fAxisValue);
+
+	/**
+	 * \brief Moves the character left or right, depending on axis value.
+	 * \param fAxisValue Value of the input axis.
+	 */
+	void MoveRight(float fAxisValue);
+
+	/**
+	 * \brief Make the character crouch from standing.
+	 */
+	void StartCrouch();
+
+	/**
+	 * \brief Make the character stand from crouching.
+	 */
+	void EndCrouch();
+
+	/**
+	 * \brief Make the character start "aiming down sight".
+	 */
+	void StartADS();
+
+	/**
+	 * \brief Make the character stop "aiming down sight".
+	 */
+	void EndADS();
+
+	/**
+	 * \brief Respond to a change in health. Wired up to health components OnHealthChanged event. Uses the signature for FOnHealthChangedSignature.
+	 * \param HealthComponent The health component the experienced a health change.
+	 * \param Health The amount of health the component now has.
+	 * \param HealthDelta The amount of health that changed.
+	 * \param DamageType The type of damage that was being inflicted.
+	 * \param InstigatedBy The controller that inflicted the health change. (specific player or ai)
+	 * \param DamageCauser The actor that inflicted the health change. (player, weapon, etc)
+	 */
+	UFUNCTION()
+	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	/**
 	 * \brief Third person camera component
@@ -87,63 +146,6 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	float DeathLifeSpan = 10.0f;
-	
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	/**
-	 * \brief Moves the character forward or backward, depending on axis value.
-	 * \param fAxisValue Value of the input axis.
-	 */
-	void MoveForward(float fAxisValue);
-
-	/**
-	 * \brief Moves the character left or right, depending on axis value.
-	 * \param fAxisValue Value of the input axis.
-	 */
-	void MoveRight(float fAxisValue);
-
-	/**
-	 * \brief Make the character crouch from standing.
-	 */
-	void StartCrouch();
-
-	/**
-	 * \brief Make the character stand from crouching.
-	 */
-	void EndCrouch();
-
-	/**
-	 * \brief Make the character start "aiming down sight".
-	 */
-	void StartADS();
-
-	/**
-	 * \brief Make the character stop "aiming down sight".
-	 */
-	void EndADS();
-
-	/**
-	 * \brief Make the character start firing the currently equipped weapon.
-	 */
-	void StartShooting();
-
-	/**
-	 * \brief Make the character stop firing the currently equipped weapon.
-	 */
-	void StopShooting();
-
-	/**
-	 * \brief Respond to a change in health. Wired up to health components OnHealthChanged event. Uses the signature for FOnHealthChangedSignature.
-	 * \param HealthComponent The health component the experienced a health change.
-	 * \param Health The amount of health the component now has.
-	 * \param HealthDelta The amount of health that changed.
-	 * \param DamageType The type of damage that was being inflicted.
-	 * \param InstigatedBy The controller that inflicted the health change. (specific player or ai)
-	 * \param DamageCauser The actor that inflicted the health change. (player, weapon, etc)
-	 */
-	UFUNCTION()
-	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 	
 private:
 
