@@ -105,6 +105,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float WeaponRateOfFire = 60.0f;
+
+	/**
+	 * \brief The bullet spread angle of the weapon (in degrees).
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin=0.0f))
+	float BulletSpreadAngle = 2.0f;
 		
 	/**
 	 * \brief The type of damage that the weapon inflicts.

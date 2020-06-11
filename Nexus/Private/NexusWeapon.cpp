@@ -89,6 +89,10 @@ void ANexusWeapon::Fire()
 		WeaponOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
 		FVector ShotDirection = EyeRotation.Vector();
+
+		// Add "bullet spread" to shot direction.
+		const float HalfAngleRad = FMath::DegreesToRadians(BulletSpreadAngle);
+		ShotDirection = FMath::VRandCone(ShotDirection, HalfAngleRad);
 		
 		FVector TraceEnd = EyeLocation + (ShotDirection * WeaponRange); // End location for eye trace.
 
