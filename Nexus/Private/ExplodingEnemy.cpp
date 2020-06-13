@@ -92,9 +92,9 @@ void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (!bSelfDestruct)
 	{
 		ANexusCharacter* PlayerCharacter = Cast<ANexusCharacter>(OtherActor);
-		if (PlayerCharacter)
+		if (PlayerCharacter && !UNexusHealthComponent::IsFriendly(this, OtherActor))
 		{
-			// If a player was overlapped, begin self-destruct.
+			// If a character on another team was overlapped, begin self-destruct.
 
 			FStringFormatOrderedArguments LogArgs;
 			LogArgs.Add(FStringFormatArg(GetName()));

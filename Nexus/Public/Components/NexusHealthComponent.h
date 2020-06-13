@@ -33,6 +33,15 @@ public:
 	const float& GetCurrentHealth() const;
 
 	/**
+	 * \brief Check if actors are on the same team.
+	 * \param Actor1 
+	 * \param Actor2 
+	 * \return Same team (true). Opposing teams (false).
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Health")
+	static bool IsFriendly(AActor* Actor1, AActor* Actor2);
+
+	/**
 	 * \brief Event used to broadcast detailed health updates.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -43,6 +52,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FCurrentHealthReplicatedUpdateEvent OnCurrentHealthUpdated;
+
+	/**
+	 * \brief Used to track teams, and to stop friendly fire.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	uint8 TeamID = 255;
 
 protected:
 
