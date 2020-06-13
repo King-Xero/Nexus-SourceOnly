@@ -35,12 +35,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	/**
-	 * \brief Get the next location the enemy should move to.
-	 * \return The point location.
-	 */
-	FVector GetNextPathPoint();
-
-	/**
 	 * \brief Respond to a change in health. Wired up to health components OnHealthChanged event. Uses the signature for FOnHealthChangedSignature.
 	 * \param HealthComponent The health component the experienced a health change.
 	 * \param Health The amount of health the component now has.
@@ -221,6 +215,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
 	TSubclassOf<UDamageType> EnemyDamageType;
 
+	/**
+	 * \brief The time interval used to refresh the enemy's path in case it gets stuck.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ExplodingEnemy")
+	float PathRefreshInterval = 3.0f;
+
 private:
 	/**
 	 * \brief Spawn particle effect for explosion.
@@ -236,6 +236,17 @@ private:
 	 * \brief Spawn sound effect for explosion.
 	 */
 	void PlayExplosionSFX() const;
+
+	/**
+	 * \brief Set the next location the enemy should move to.
+	 */
+	void SetNextPathPoint();
+
+	/**
+	 * \brief Find the next location the enemy should move to.
+	 * \return The point location.
+	 */
+	FVector FindNextPathPoint();
 
 	/**
 	 * \brief Used to track if the enemy has exploded.
@@ -280,6 +291,11 @@ private:
 	 * \brief Handle used to manage the set power level timer.
 	 */
 	FTimerHandle TimerHandle_SetPowerLevel;
+
+	/**
+	 * \brief Handle used to manage the refresh path timer.
+	 */
+	FTimerHandle TimerHandle_RefreshPath;
 
 	/**
 	 * \brief Name of the parameter used to pulse material when taking damage. (Defined in M_ExplodingEnemy)

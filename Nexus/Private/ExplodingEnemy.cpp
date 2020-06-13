@@ -12,6 +12,7 @@
 #include "Components/SphereComponent.h"
 #include "NexusCharacter.h"
 #include "Components/AudioComponent.h"
+#include "EngineUtils.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -67,7 +68,7 @@ void AExplodingEnemy::Tick(float DeltaTime)
 		if (DistanceToTarget <= RequiredDistanceToTarget)
 		{
 			// If the enemy is within range of the path point, get the next point.
-			NextPathPoint = GetNextPathPoint();
+			SetNextPathPoint();
 		}
 		else
 		{
@@ -95,7 +96,6 @@ void AExplodingEnemy::NotifyActorBeginOverlap(AActor* OtherActor)
 		if (PlayerCharacter && !UNexusHealthComponent::IsFriendly(this, OtherActor))
 		{
 			// If a character on another team was overlapped, begin self-destruct.
-
 			FStringFormatOrderedArguments LogArgs;
 			LogArgs.Add(FStringFormatArg(GetName()));
 			LogArgs.Add(FStringFormatArg(PlayerCharacter->GetName()));
@@ -140,7 +140,7 @@ void AExplodingEnemy::BeginPlay()
 	if (ROLE_Authority == GetLocalRole())
 	{
 		// Find the initial point to move towards.
-		NextPathPoint = GetNextPathPoint();
+		SetNextPathPoint();
 
 		GetWorldTimerManager().SetTimer(TimerHandle_SetPowerLevel, this, &AExplodingEnemy::SetPowerLevel, SetPowerLevelInterval, true, 0.0f);
 	}
@@ -157,27 +157,6 @@ void AExplodingEnemy::BeginPlay()
 	// Set sound effect to be played.
 	MovementAudioComponent->SetSound(MovementSFX);
 	MovementAudioComponent->Play();
-}
-
-FVector AExplodingEnemy::GetNextPathPoint()
-{
-	// Get the first player in the world. **Will need to change for multiple players.**
-	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
-
-	if (PlayerCharacter)
-	{
-		// Get the path from the enemy's current position to the player.
-		UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerCharacter);
-
-		if (1 < NavigationPath->PathPoints.Num())
-		{
-			// Return the second point in the navigation path.
-			return NavigationPath->PathPoints[1];
-		}
-	}	
-
-	// If there is a problem getting a path point, return the enemy's current location.
-	return GetActorLocation();
 }
 
 void AExplodingEnemy::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
@@ -313,4 +292,56 @@ void AExplodingEnemy::PlayExplosionSFX() const
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSFX, GetActorLocation());
 	}
+}
+
+void AExplodingEnemy::SetNextPathPoint()
+{
+	NextPathPoint = FindNextPathPoint();
+}
+
+FVector AExplodingEnemy::FindNextPathPoint()
+{
+	AActor* NearestTarget = nullptr;
+	float NearestTargetDistance = FLT_MAX;
+
+	// Get the closest opposing pawn in the world.
+	for (TActorIterator<APawn> PawnIterator(GetWorld()); PawnIterator; ++PawnIterator)
+	{
+		// Dereference the pawn from the iterator.
+		APawn* PawnToCheck = *PawnIterator;
+		// Check if the pawn is valid, and is not a friendly.
+		if (PawnToCheck && !UNexusHealthComponent::IsFriendly(PawnToCheck, this))
+		{
+			UNexusHealthComponent* PawnHealthComponent = Cast<UNexusHealthComponent>(PawnToCheck->GetComponentByClass(UNexusHealthComponent::StaticClass()));
+			if (PawnHealthComponent && 0.0f < PawnHealthComponent->GetCurrentHealth())
+			{
+				const float DistanceToPawn = (PawnToCheck->GetActorLocation() - GetActorLocation()).Size();
+
+				if (DistanceToPawn < NearestTargetDistance)
+				{
+					NearestTargetDistance = DistanceToPawn;
+					NearestTarget = PawnToCheck;
+				}
+			}
+		}
+	}
+
+	if (NearestTarget)
+	{
+		// Get the path from the enemy's current position to the player.
+		UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), NearestTarget);
+
+		GetWorldTimerManager().ClearTimer(TimerHandle_RefreshPath);
+		// Set timer that will refresh the enemy's path if it gets stuck. The timer is cleared above if the path point is reached before this timer elapses.
+		GetWorldTimerManager().SetTimer(TimerHandle_RefreshPath, this, &AExplodingEnemy::SetNextPathPoint, PathRefreshInterval);
+
+		if (1 < NavigationPath->PathPoints.Num())
+		{
+			// Return the second point in the navigation path.
+			return NavigationPath->PathPoints[1];
+		}
+	}
+
+	// If there is a problem getting a path point, return the enemy's current location.
+	return GetActorLocation();
 }
