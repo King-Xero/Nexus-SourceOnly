@@ -111,7 +111,10 @@ void AExplodingBarrel::Explode()
 void AExplodingBarrel::OnRep_Explode() const
 {
 	// Spawn particle effect for explosion.
-	PlayExplosionEffect();
+	PlayExplosionVFX();
+
+	// Spawn sound effect for explosion.
+	PlayExplosionSFX();
 
 	// Change the material on the barrel.
 	SetExplodedMaterial();
@@ -125,11 +128,19 @@ void AExplodingBarrel::OnRep_Explode() const
 #endif
 }
 
-void AExplodingBarrel::PlayExplosionEffect() const
+void AExplodingBarrel::PlayExplosionVFX() const
 {
 	if (ExplosionVFX)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation(), MeshComponent->GetComponentRotation());
+	}
+}
+
+void AExplodingBarrel::PlayExplosionSFX() const
+{
+	if (ExplosionSFX)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSFX, GetActorLocation());
 	}
 }
 

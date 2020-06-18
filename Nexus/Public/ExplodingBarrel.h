@@ -80,6 +80,12 @@ protected:
 	UMaterialInterface* ExplodedMaterial;
 
 	/**
+	 * \brief Sound effect spawned at the barrel's location when it explodes.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel")
+	USoundBase* ExplosionSFX;
+
+	/**
 	 * \brief Magnitude of the vertical impulse when the barrel is launched up as it explodes.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel")
@@ -120,7 +126,12 @@ private:
 	/**
 	 * \brief Spawn particle effect for explosion.
 	 */
-	void PlayExplosionEffect() const;
+	void PlayExplosionVFX() const;
+
+	/**
+	 * \brief Spawn sound effect for explosion.
+	 */
+	void PlayExplosionSFX() const;
 
 	/**
 	 * \brief Swap the mesh material to the exploded material.
