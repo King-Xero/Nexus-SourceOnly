@@ -54,15 +54,15 @@ void ANexusPowerUpActor::ActivatePowerUp(AActor* ActivatingActor)
 
 void ANexusPowerUpActor::DeactivatePowerUp()
 {
+	// The power up has expired, so deactivate the effect.
+	OnDeactivated();
+
 	// Set flag to replicate deactivation.
 	bPowerUpActivated = false;
 
 	// Deactivate power up locally.
 	OnRep_PowerUpActivated();
-
-	// The power up has expired, so deactivate the effect.
-	OnDeactivated();
-
+	
 	// Clear the timer so we stop processing the power up.
 	GetWorldTimerManager().ClearTimer(TimerHandle_PowerUp);
 }

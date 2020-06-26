@@ -40,16 +40,16 @@ bool UNexusHealthComponent::IsFriendly(AActor* Actor1, AActor* Actor2)
 {
 	if (!Actor1 || !Actor2)
 	{
-		// If we can't identify actors as enemies, assume they are friendly.
-		return true;
+		// If we can't identify actors, assume they are not friendly.
+		return false;
 	}
 	UNexusHealthComponent* HealthComponent1 = Cast<UNexusHealthComponent>(Actor1->GetComponentByClass(UNexusHealthComponent::StaticClass()));
 	UNexusHealthComponent* HealthComponent2 = Cast<UNexusHealthComponent>(Actor2->GetComponentByClass(UNexusHealthComponent::StaticClass()));
 
 	if (!HealthComponent1 || !HealthComponent2)
 	{
-		// If we can't identify actors as enemies, assume they are friendly.
-		return true;
+		// If we can't identify actors, assume they are not friendly.
+		return false;
 	}
 
 	// If team numbers are equal, actors are actually friendly.
