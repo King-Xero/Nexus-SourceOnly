@@ -65,6 +65,8 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	PlayerInputComponent->BindAction(ShootBindingName, IE_Pressed, this, &ANexusCharacter::StartShooting);
 	PlayerInputComponent->BindAction(ShootBindingName, IE_Released, this, &ANexusCharacter::StopShooting);
+
+	PlayerInputComponent->BindAction(ReloadBindingName, IE_Released, this, &ANexusCharacter::StartReloading);
 }
 
 FVector ANexusCharacter::GetPawnViewLocation() const
@@ -96,6 +98,14 @@ void ANexusCharacter::StopShooting()
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFiring();
+	}
+}
+
+void ANexusCharacter::StartReloading()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StartReloading();
 	}
 }
 

@@ -46,12 +46,28 @@ public:
 	/**
 	 * \brief Stop shooting the weapon.
 	 */
-	virtual void StopFiring();	
+	virtual void StopFiring();
+
+	/**
+	 * \brief Start reloading the weapon.
+	 */
+	virtual void StartReloading();
+
+	/**
+	 * \brief Stop reloading the weapon.
+	 */
+	virtual void StopReloading();
 	
 protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	/**
+	 * \brief Check if the weapon can be fired.
+	 * \return Can fire - true, Cannot fire - false.
+	 */
+	bool CanFireWeapon();
 	
 	/**
 	 * \brief Shoot the weapon.
@@ -69,6 +85,23 @@ protected:
 	 */
 	UFUNCTION()
 	void OnRep_HitScanInfo() const;
+
+	/**
+	 * \brief Check if the weapon can be reloaded.
+	 * \return Can reload - true, Cannot reload - false.
+	 */
+	bool CanReloadWeapon();
+	
+	/**
+	 * \brief Reload the weapon.
+	 */
+	virtual void Reload();
+
+	/**
+	 * \brief Reload the weapon on the server.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerReload();
 	
 	/**
 	 * \brief The visible mesh of the weapon.
@@ -111,6 +144,42 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin=0.0f))
 	float BulletSpreadAngle = 2.0f;
+
+	/**
+	 * \brief The amount of ammo this weapon spawns with.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	int32 StartingAmmo = 999;
+
+	/**
+	 * \brief The total amount of currently available ammo.
+	 */
+	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = "Weapon")
+	int32 CurrentTotalAmmo;
+
+	/**
+	 * \brief The maximum amount of ammo that can be carried for this weapon.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	int32 MaxAmmo = 999;
+
+	/**
+	 * \brief The amount of ammo currently loaded in the clip.
+	 */
+	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = "Weapon")
+	int32 CurrentAmmoInClip;
+	
+	/**
+	 * \brief The maximum amount of ammo that can be loaded into the clip.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	int32 MaxAmmoPerClip = 30;
+
+	/**
+	 * \brief The time it takes to reload the weapon.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float WeaponReloadDelayTime = 2.0f;
 		
 	/**
 	 * \brief The type of damage that the weapon inflicts.
@@ -210,9 +279,19 @@ protected:
 	float GetDamageMultiplier(EPhysicalSurface SurfaceType) const;
 
 	/**
+	 * \brief Remove ammo from the clip when fired.
+	 */
+	void DepleteAmmo();
+
+	/**
 	 * \brief Handle used to manage the weapon fire delay timer.
 	 */
 	FTimerHandle TimerHandle_WeaponFireDelay;
+
+	/**
+	 * \brief Handle used to manage the weapon reload delay timer.
+	 */
+	FTimerHandle TimerHandle_WeaponReloadDelay;
 
 	/**
 	 * \brief The last time the weapon fired. (Cached when the weapon fire method executes)
@@ -223,4 +302,9 @@ protected:
 	 * \brief The time delay between weapon shots. (Calculated using WeaponRateOfFire)
 	 */
 	float WeaponFireDelayTime;
+
+	/**
+	 * \brief Used to track if the weapon is currently reloading.
+	 */
+	bool bReloading;
 };

@@ -50,6 +50,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void StopShooting();
 
+	/**
+	 * \brief Make the character start reloading the currently equipped weapon.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void StartReloading();
+
 protected:
 	
 	// Called when the game starts or when spawned
@@ -216,4 +222,9 @@ private:
 	 * \brief Name used for shooting input binding.
 	 */
 	const FName ShootBindingName = "Fire";
+
+	/**
+	 * \brief Name used for reload input binding.
+	 */
+	const FName ReloadBindingName = "Reload";
 };

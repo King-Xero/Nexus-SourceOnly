@@ -7,6 +7,7 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Nexus/Utils/NexusTypeDefinitions.h"
 #include "Net/UnrealNetwork.h"
+#include "Nexus/Utils/Logging/NexusLogging.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -42,6 +43,8 @@ void ANexusWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLi
 
 	// Replicate hit info on all clients except the owner, so the other clients can play the replicated weapon effects.
 	DOREPLIFETIME_CONDITION(ANexusWeapon, HitScanInfo, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(ANexusWeapon, CurrentAmmoInClip, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ANexusWeapon, CurrentTotalAmmo, COND_OwnerOnly);
 }
 
 void ANexusWeapon::StartFiring()
@@ -50,14 +53,35 @@ void ANexusWeapon::StartFiring()
 	// The first delay has to be at least 0, as passing a negative value has reserved functionality.
 	const float FirstDelay = FMath::Max(LastFireTime + WeaponFireDelayTime - GetWorld()->TimeSeconds, 0.0f);
 	
-	// Start looping timer to start automatic fire
+	// Start looping timer to start automatic fire.
 	GetWorldTimerManager().SetTimer(TimerHandle_WeaponFireDelay, this, &ANexusWeapon::Fire,  WeaponFireDelayTime, true, FirstDelay);
 }
 
 void ANexusWeapon::StopFiring()
 {
-	// Stop looping timer to stop automatic fire
+	// Stop looping timer to stop automatic fire.
 	GetWorldTimerManager().ClearTimer(TimerHandle_WeaponFireDelay);
+}
+
+void ANexusWeapon::StartReloading()
+{
+	if (CanReloadWeapon())
+	{
+		// Start timer to reload the weapon.
+		GetWorldTimerManager().SetTimer(TimerHandle_WeaponReloadDelay, this, &ANexusWeapon::Reload, WeaponReloadDelayTime);
+
+		bReloading = true;
+		FNexusLogging::Log(ELogLevel::INFO, "Weapon has started reloading");
+	}	
+}
+
+void ANexusWeapon::StopReloading()
+{
+	// Stop timer to stop reloading the weapon.
+	GetWorldTimerManager().ClearTimer(TimerHandle_WeaponReloadDelay);
+
+	bReloading = false;
+	FNexusLogging::Log(ELogLevel::INFO, "Weapon reloading was stopped.");	
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +91,17 @@ void ANexusWeapon::BeginPlay()
 
 	// Calculate the time between weapon shot. Rate of fire is round per minute.
 	WeaponFireDelayTime = 60.0f / WeaponRateOfFire;
+	// Initial ammo in clip should be somewhere between the max ammo the clip can hold, and the amount of ammo this weapon spawns with.
+	CurrentAmmoInClip = FMath::Min(MaxAmmoPerClip, StartingAmmo);
+	// The total available ammo should be the smallest amount between the spawn amount, and the maximum that can be carried.
+	CurrentTotalAmmo = FMath::Min(StartingAmmo, MaxAmmo);
+}
+
+bool ANexusWeapon::CanFireWeapon()
+{
+	const bool bAmmoInClip = 0 < CurrentAmmoInClip;
+	
+	return bAmmoInClip && !bReloading;
 }
 
 /**
@@ -82,8 +117,11 @@ void ANexusWeapon::Fire()
 	
 	AActor* WeaponOwner = GetOwner();
 	
-	if (WeaponOwner)
+	if (WeaponOwner && CanFireWeapon())
 	{
+		// Use ammo.
+		DepleteAmmo();
+		
 		FVector EyeLocation; // Start location for line trace.
 		FRotator EyeRotation;
 		WeaponOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
@@ -171,6 +209,54 @@ void ANexusWeapon::OnRep_HitScanInfo() const
 	PlayWeaponFiredEffects(HitScanInfo.TraceTargetLocation);
 
 	PlayWeaponImpactEffects(HitScanInfo.HitSurfaceType, HitScanInfo.TraceTargetLocation);
+}
+
+bool ANexusWeapon::CanReloadWeapon()
+{
+	// Check if ammo has been depleted from the clip.
+	const bool bRoomInClip = CurrentAmmoInClip < MaxAmmoPerClip;
+	// Check if there is ammo spare that is not in the clip.
+	const bool bAmmoInReserve = CurrentTotalAmmo - CurrentAmmoInClip > 0;
+
+	return bRoomInClip && bAmmoInReserve;
+}
+
+void ANexusWeapon::Reload()
+{
+	// Reload should only be called via the server authority.
+	if (ROLE_Authority > GetLocalRole())
+	{
+		ServerReload();
+	}
+	
+	// Calculate how much room is in the clip.
+	const int32 BulletsDepletedFromClip = MaxAmmoPerClip - CurrentAmmoInClip;
+
+	// Calculate how much ammo is spare that is not in the clip.
+	const int32 BulletsInReserve = CurrentTotalAmmo - CurrentAmmoInClip;
+
+	// The amount of bullets to reload should be the smallest amount between available bullets, and room in clip.
+	const int32 BulletsToReload = FMath::Min(BulletsDepletedFromClip, BulletsInReserve);
+
+	if (0 < BulletsToReload)
+	{
+		// Add bullets to clip.
+		CurrentAmmoInClip += BulletsToReload;
+	}
+
+	FNexusLogging::Log(ELogLevel::INFO, "Weapon has finished reloading");
+	bReloading = false;
+}
+
+void ANexusWeapon::ServerReload_Implementation()
+{
+	// The reload code will execute via the server authority.
+	Reload();
+}
+
+bool ANexusWeapon::ServerReload_Validate()
+{
+	return true;
 }
 
 
@@ -276,4 +362,16 @@ float ANexusWeapon::GetDamageMultiplier(EPhysicalSurface SurfaceType) const
 			// Default damage multiplier is 1.
 			return 1.0f;
 	}
+}
+
+void ANexusWeapon::DepleteAmmo()
+{
+	CurrentAmmoInClip = FMath::Max(0, --CurrentAmmoInClip);
+	CurrentTotalAmmo = FMath::Max(0, --CurrentTotalAmmo);
+
+	FStringFormatOrderedArguments LogArgs;
+	LogArgs.Add(FStringFormatArg(CurrentAmmoInClip));
+	LogArgs.Add(FStringFormatArg(CurrentTotalAmmo));
+
+	FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Ammo in clip: {0}. Total ammo: {1}."), LogArgs));
 }
