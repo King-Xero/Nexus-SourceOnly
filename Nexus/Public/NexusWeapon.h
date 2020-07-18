@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "NexusWeapon.generated.h"
 
+class ANexusCharacter;
 class USkeletalMeshComponent;
 
 USTRUCT()
@@ -57,6 +58,12 @@ public:
 	 * \brief Stop reloading the weapon.
 	 */
 	virtual void StopReloading();
+
+	/**
+	 * \brief Set the actor owner, and attach the actor to the character.
+	 * \param NewOwningCharacter
+	 */
+	void SetOwnerAndAttachToCharacter(ANexusCharacter* NewOwningCharacter);
 	
 protected:
 
@@ -67,7 +74,7 @@ protected:
 	 * \brief Check if the weapon can be fired.
 	 * \return Can fire - true, Cannot fire - false.
 	 */
-	bool CanFireWeapon();
+	bool CanFireWeapon() const;
 	
 	/**
 	 * \brief Shoot the weapon.
@@ -102,6 +109,18 @@ protected:
 	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerReload();
+
+	/**
+	 * \brief Call the server to play an animation montage.
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate = 1.0f);
+	
+	/**
+	 * \brief Execute the animation montage on the server and all clients.
+	 */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate);
 	
 	/**
 	 * \brief The visible mesh of the weapon.
@@ -230,10 +249,40 @@ protected:
 	TSubclassOf<UCameraShake> WeaponCameraShake;
 
 	/**
+	 * \brief Reload animation montage.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* ReloadAnimMontage;
+
+	/**
+	 * \brief Sound effect spawned at the weapons's location when it is fired.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* FiredSFX;
+
+	/**
 	 * \brief Hit scan information for replication.
 	 */
 	UPROPERTY(ReplicatedUsing=OnRep_HitScanInfo)
 	FHitScanInfo HitScanInfo;
+
+	/**
+	 * \brief Name of the character socket the weapon should be attached to.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName WeaponSocketName = "hand_rSocket";
+
+	/**
+	 * \brief The character that currently owns this weapon.
+	 */
+	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = "Weapon")
+	ANexusCharacter* OwningCharacter;
+
+	/**
+	 * \brief Used to track if the weapon is currently reloading.
+	 */
+	UPROPERTY(Replicated)
+	bool bReloading;
 
 	/**
 	 * \brief Play all effects for when the weapon hits something.
@@ -272,6 +321,11 @@ protected:
 	void PlayCameraShake() const;
 
 	/**
+	 * \brief Spawn sound effect for weapon fired.
+	 */
+	void PlayFiredSFX() const;
+
+	/**
 	 * \brief Get the damage multiplier for the surface type that was hit.
 	 * \param SurfaceType The type of surface that was hit.
 	 * \return Multiplier used to scale damage.
@@ -302,9 +356,4 @@ protected:
 	 * \brief The time delay between weapon shots. (Calculated using WeaponRateOfFire)
 	 */
 	float WeaponFireDelayTime;
-
-	/**
-	 * \brief Used to track if the weapon is currently reloading.
-	 */
-	bool bReloading;
 };

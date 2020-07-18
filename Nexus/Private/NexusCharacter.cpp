@@ -139,10 +139,7 @@ void ANexusCharacter::BeginPlay()
 
 		if (CurrentWeapon)
 		{
-			// Set owner for use in weapon fire function.
-			CurrentWeapon->SetOwner(this);
-			// Attach the weapon to the character's hand.
-			CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
+			CurrentWeapon->SetOwnerAndAttachToCharacter(this);
 		}
 	}	
 

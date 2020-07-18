@@ -142,12 +142,6 @@ protected:
 	TSubclassOf<ANexusWeapon> SpawnWeaponClass;
 
 	/**
-	 * \brief Name of the socket at the weapon's muzzle.
-	 */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Player")
-	FName WeaponSocketName = "hand_rSocket";
-
-	/**
 	 * \brief The number of seconds until the character is destroyed, after the character dies. (0 = character will not be destroyed)
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")

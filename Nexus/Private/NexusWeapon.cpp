@@ -8,6 +8,7 @@
 #include "Nexus/Utils/NexusTypeDefinitions.h"
 #include "Net/UnrealNetwork.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
+#include "NexusCharacter.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DrawDebugHelpers.h"
 #include "Nexus/Utils/ConsoleVariables.h"
@@ -43,8 +44,15 @@ void ANexusWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLi
 
 	// Replicate hit info on all clients except the owner, so the other clients can play the replicated weapon effects.
 	DOREPLIFETIME_CONDITION(ANexusWeapon, HitScanInfo, COND_SkipOwner);
+
+	// Replicate ammo variables for weapon owner.
 	DOREPLIFETIME_CONDITION(ANexusWeapon, CurrentAmmoInClip, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ANexusWeapon, CurrentTotalAmmo, COND_OwnerOnly);
+
+	// Replicate the weapon owner. Required for animation replication.
+	DOREPLIFETIME(ANexusWeapon, OwningCharacter);
+
+	DOREPLIFETIME(ANexusWeapon, bReloading);
 }
 
 void ANexusWeapon::StartFiring()
@@ -67,6 +75,23 @@ void ANexusWeapon::StartReloading()
 {
 	if (CanReloadWeapon())
 	{
+		// Play reload animation.
+		if (OwningCharacter && ReloadAnimMontage)
+		{
+			const float ReloadMontagePlaybackRate = ReloadAnimMontage->GetPlayLength() / WeaponReloadDelayTime;
+			
+			if (ROLE_Authority > GetLocalRole())
+			{
+				// Play the animation via the server authority.
+				ServerPlayAnimationMontage(ReloadAnimMontage, ReloadMontagePlaybackRate);
+			}
+			else
+			{
+				// Play the animation.
+				MulticastPlayAnimationMontage(ReloadAnimMontage, ReloadMontagePlaybackRate);
+			}
+		}
+		
 		// Start timer to reload the weapon.
 		GetWorldTimerManager().SetTimer(TimerHandle_WeaponReloadDelay, this, &ANexusWeapon::Reload, WeaponReloadDelayTime);
 
@@ -84,6 +109,18 @@ void ANexusWeapon::StopReloading()
 	FNexusLogging::Log(ELogLevel::INFO, "Weapon reloading was stopped.");	
 }
 
+void ANexusWeapon::SetOwnerAndAttachToCharacter(ANexusCharacter* NewOwningCharacter)
+{
+	if (OwningCharacter != NewOwningCharacter)
+	{
+		OwningCharacter = NewOwningCharacter;
+		// Set owner for use in fire function.
+		SetOwner(OwningCharacter);
+		// Attach the weapon to the character's hand.
+		AttachToComponent(OwningCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
+	}	
+}
+
 // Called when the game starts or when spawned
 void ANexusWeapon::BeginPlay()
 {
@@ -97,7 +134,7 @@ void ANexusWeapon::BeginPlay()
 	CurrentTotalAmmo = FMath::Min(StartingAmmo, MaxAmmo);
 }
 
-bool ANexusWeapon::CanFireWeapon()
+bool ANexusWeapon::CanFireWeapon() const
 {
 	const bool bAmmoInClip = 0 < CurrentAmmoInClip;
 	
@@ -109,16 +146,16 @@ bool ANexusWeapon::CanFireWeapon()
  */
 void ANexusWeapon::Fire()
 {
-	// Fire should only be called via the server authority.
-	if (ROLE_Authority > GetLocalRole())
-	{
-		ServerFire();
-	}
-	
 	AActor* WeaponOwner = GetOwner();
 	
 	if (WeaponOwner && CanFireWeapon())
 	{
+		// Fire should only be called via the server authority.
+		if (ROLE_Authority > GetLocalRole())
+		{
+			ServerFire();
+		}
+		
 		// Use ammo.
 		DepleteAmmo();
 		
@@ -259,6 +296,20 @@ bool ANexusWeapon::ServerReload_Validate()
 	return true;
 }
 
+void ANexusWeapon::ServerPlayAnimationMontage_Implementation(UAnimMontage* AnimMontage, float PlaybackRate)
+{
+	// To get something to execute on all clients (and the server), you need to use a NetMulticast function, that is called from the server.
+	// So to play an animation on all clients, we must call (from a client/server) this function that will execute on the server. Now executing
+	// on the server, we call the below function, which will be executed on all connected clients.
+
+	MulticastPlayAnimationMontage(AnimMontage, PlaybackRate);
+}
+
+void ANexusWeapon::MulticastPlayAnimationMontage_Implementation(UAnimMontage* AnimMontage, float PlaybackRate)
+{
+	// Although this function is called on all clients, OwningCharacter must also be replicated for the animation to be played.
+	OwningCharacter->PlayAnimMontage(AnimMontage, PlaybackRate);
+}
 
 void ANexusWeapon::PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target) const
 {
@@ -306,6 +357,9 @@ void ANexusWeapon::PlayWeaponFiredEffects(FVector BulletTracerTarget) const
 
 	// Shake the camera.
 	PlayCameraShake();
+
+	// Play the fired sound effect.
+	PlayFiredSFX();
 }
 
 void ANexusWeapon::PlayMuzzleEffect() const
@@ -347,6 +401,14 @@ void ANexusWeapon::PlayCameraShake() const
 			}
 		}
 	}	
+}
+
+void ANexusWeapon::PlayFiredSFX() const
+{
+	if (FiredSFX)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, FiredSFX, GetActorLocation());
+	}
 }
 
 float ANexusWeapon::GetDamageMultiplier(EPhysicalSurface SurfaceType) const
