@@ -10,6 +10,7 @@
 #include "Components/NexusHealthComponent.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -170,6 +171,7 @@ void ANexusCharacter::MoveRight(float fAxisValue)
  */
 void ANexusCharacter::StartCrouch()
 {
+	PlayCrouchSFX();
 	Crouch();
 }
 
@@ -229,4 +231,12 @@ void ANexusCharacter::SetAimDownSight(float DeltaTime)
 	const float InterpolationFOV = FMath::FInterpTo(CameraComponent->FieldOfView, TargetFOV, DeltaTime, ADSInterpolationSpeed);
 
 	CameraComponent->SetFieldOfView(InterpolationFOV);
+}
+
+void ANexusCharacter::PlayCrouchSFX() const
+{
+	if (CrouchSFX)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, CrouchSFX, GetActorLocation());
+	}
 }

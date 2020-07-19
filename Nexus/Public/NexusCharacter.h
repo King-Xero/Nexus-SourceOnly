@@ -76,11 +76,13 @@ protected:
 	/**
 	 * \brief Make the character crouch from standing.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	void StartCrouch();
 
 	/**
 	 * \brief Make the character stand from crouching.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	void EndCrouch();
 
 	/**
@@ -146,6 +148,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	float DeathLifeSpan = 10.0f;
+
+	/**
+	 * \brief Sound effect spawned at the character's location when they crouch.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* CrouchSFX;
 	
 private:
 
@@ -154,6 +162,11 @@ private:
 	 * \param DeltaTime Time since last update.
 	 */
 	void SetAimDownSight(float DeltaTime);
+
+	/**
+	 * \brief Spawn sound effect for character crouching.
+	 */
+	void PlayCrouchSFX() const;
 	
 	/**
 	 * \brief Default FOV value for the camera, cached on begin play.
