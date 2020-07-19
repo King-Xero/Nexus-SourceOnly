@@ -56,6 +56,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void StartReloading();
 
+	/**
+	 * \brief Grass footstep sound effect.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* GrassFootstepSFX;
+
+	/**
+	 * \brief Crouch footstep sound effect.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* CrouchFootstepSFX;
+
+	/**
+	 * \brief Footstep sound effect.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* FootstepSFX;
+
 protected:
 	
 	// Called when the game starts or when spawned

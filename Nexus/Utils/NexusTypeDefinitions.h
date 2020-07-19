@@ -8,6 +8,8 @@
 #define SURFACE_CHARACTER_BODY	SurfaceType2
 #define SURFACE_CHARACTER_LIMBS SurfaceType3
 
+#define SURFACE_ENVIRONMENT_GRASS SurfaceType4
+
 // Definitions of custom collision channels set up in the editor.
 
 #define COLLISION_OBJECT_PROJECTILE ECC_GameTraceChannel1

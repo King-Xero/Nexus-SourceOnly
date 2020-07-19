@@ -33,6 +33,9 @@ ANexusCharacter::ANexusCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_OBJECT_PROJECTILE, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_TRACE_WEAPON, ECR_Ignore);
 
+	// This must be set to true to detect the physical material of the floor the character is walking on.
+	GetCapsuleComponent()->bReturnMaterialOnMove = true;
+
 	// This must be set to allow the character to crouch.
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
