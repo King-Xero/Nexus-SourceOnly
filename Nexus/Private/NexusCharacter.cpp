@@ -207,6 +207,9 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		
 		bDead = true;
 
+		// Play death sfx
+		PlayDeathSFX();
+
 		// Disable all collisions on capsule component.
 		UCapsuleComponent* cCapsuleCollider = GetCapsuleComponent();
 		cCapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -240,6 +243,14 @@ void ANexusCharacter::PlayCrouchSFX() const
 {
 	if (CrouchSFX)
 	{
-		UGameplayStatics::SpawnSoundAtLocation(this, CrouchSFX, GetActorLocation());
+		UGameplayStatics::SpawnSoundAttached(CrouchSFX, GetMesh());
+	}
+}
+
+void ANexusCharacter::PlayDeathSFX() const
+{
+	if (DeathSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(DeathSFX, GetMesh());
 	}
 }

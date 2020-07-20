@@ -172,6 +172,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	USoundBase* CrouchSFX;
+
+	/**
+	 * \brief Sound effect spawned at the character's location when they die.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* DeathSFX;
 	
 private:
 
@@ -185,6 +191,11 @@ private:
 	 * \brief Spawn sound effect for character crouching.
 	 */
 	void PlayCrouchSFX() const;
+
+	/**
+	 * \brief Spawn sound effect for character dying.
+	 */
+	void PlayDeathSFX() const;
 	
 	/**
 	 * \brief Default FOV value for the camera, cached on begin play.
