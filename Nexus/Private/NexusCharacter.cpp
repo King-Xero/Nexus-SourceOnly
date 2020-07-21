@@ -11,6 +11,7 @@
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
+#include "ExplosiveDamageType.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -113,6 +114,35 @@ void ANexusCharacter::StartReloading()
 	}
 }
 
+void ANexusCharacter::DeathRagdollCharacter() const
+{
+	// Enable full ragdoll.
+	GetMesh()->SetCollisionProfileName(FName(TEXT("Ragdoll")));
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->WakeAllRigidBodies();
+
+	// Set mesh to update joints from animation, and blend physics with animation.
+	// This results in a hybrid ragdoll effect. Rather than completely collapsing the ragdoll is partially driven by the any playing animation.
+	GetMesh()->SetAllBodiesPhysicsBlendWeight(RagdollPhysicsBlendWeight);
+	GetMesh()->bUpdateJointsFromAnimation = true;
+
+	GetMesh()->bBlendPhysics = true;
+
+	// Weapon ragdoll.
+	if (CurrentWeapon)
+	{
+		USkeletalMeshComponent* WeaponMeshComponent = Cast<USkeletalMeshComponent>(CurrentWeapon->GetRootComponent());
+		if (WeaponMeshComponent)
+		{
+			WeaponMeshComponent->SetCollisionProfileName(FName(TEXT("Ragdoll")));
+			WeaponMeshComponent->SetSimulatePhysics(true);
+			WeaponMeshComponent->bBlendPhysics = true;
+			WeaponMeshComponent->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+		}		
+	}
+}
+
 void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -207,14 +237,25 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		
 		bDead = true;
 
-		// Play death sfx
-		PlayDeathSFX();
-
 		// Disable all collisions on capsule component.
 		UCapsuleComponent* cCapsuleCollider = GetCapsuleComponent();
 		cCapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		cCapsuleCollider->SetCollisionResponseToAllChannels(ECR_Ignore);
+		
+		// Explosive damage resulting in death should cause immediate ragdoll.
+		if (DamageType->IsA(UExplosiveDamageType::StaticClass()))
+		{
+			DeathRagdollCharacter();
+		}
+		else
+		{
+			// Play death sfx
+			PlayDeathSFX();
 
+			// Play death animation. Death animation will trigger ragdoll via DeathRagdollAnimNotify.
+			PlayDeathAnimation();
+		}
+		
 		// Immediately stop all movement, and prevent the component from updating.
 		UPawnMovementComponent* cMovementComponent = GetMovementComponent();
 		cMovementComponent->StopMovementImmediately();
@@ -223,8 +264,13 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		// Disable further movement and camera control.
 		DetachFromControllerPendingDestroy();
 
-		// Setting the lifespan will cause the character to be destroyed after the time value passed.
+		// Setting the lifespan will cause the character/weapons to be destroyed after the time value passed.
 		SetLifeSpan(DeathLifeSpan);
+
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->SetLifeSpan(DeathLifeSpan);
+		}		
 	}
 }
 
@@ -253,4 +299,17 @@ void ANexusCharacter::PlayDeathSFX() const
 	{
 		UGameplayStatics::SpawnSoundAttached(DeathSFX, GetMesh());
 	}
+}
+
+void ANexusCharacter::PlayDeathAnimation() const
+{
+	// Play a random death animation from the available animations.
+	const int RandomIndex = FMath::RandRange(0, DeathAnimations.Num() - 1);
+
+	UAnimSequence* DeathAnimation = DeathAnimations[RandomIndex];
+
+	if (DeathAnimation)
+	{
+		GetMesh()->PlayAnimation(DeathAnimation, false);
+	}	
 }

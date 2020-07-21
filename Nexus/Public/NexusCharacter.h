@@ -57,6 +57,12 @@ public:
 	void StartReloading();
 
 	/**
+	 * \brief Make the character and currently equipped weapon ragdoll.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void DeathRagdollCharacter() const;
+
+	/**
 	 * \brief Grass footstep sound effect.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
@@ -178,6 +184,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	USoundBase* DeathSFX;
+
+	/**
+	 * \brief Animations played when the character dies.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	TArray<UAnimSequence*> DeathAnimations;
 	
 private:
 
@@ -196,6 +208,11 @@ private:
 	 * \brief Spawn sound effect for character dying.
 	 */
 	void PlayDeathSFX() const;
+
+	/**
+	 * \brief Play random death animation from available animations.
+	 */
+	void PlayDeathAnimation() const;
 	
 	/**
 	 * \brief Default FOV value for the camera, cached on begin play.
@@ -263,4 +280,9 @@ private:
 	 * \brief Name used for reload input binding.
 	 */
 	const FName ReloadBindingName = "Reload";
+
+	/**
+	 * \brief Weighting used to blend between ragdoll physics and animation.
+	 */
+	const float RagdollPhysicsBlendWeight = 0.8f;
 };
