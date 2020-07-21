@@ -60,6 +60,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool bDead;
 
+	/**
+	 * \brief Used to track if the character is aiming down sights.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bAimingDownSights;
+
 private:
 	
 	/**

@@ -39,6 +39,12 @@ public:
 	bool IsDead() const;
 
 	/**
+	 * \brief Check if the character is aiming down sights.
+	 * \return true - ADS, false - Not ADS.
+	 */
+	bool IsAimingDownSights() const;
+
+	/**
 	 * \brief Make the character start firing the currently equipped weapon.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Player")
@@ -222,6 +228,7 @@ private:
 	/**
 	 * \brief Used to toggle the ADS zoom.
 	 */
+	UPROPERTY(Replicated)
 	bool bAimDownSight;
 
 	/**
@@ -235,6 +242,11 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	bool bDead;
+
+	/**
+	 * \brief Default maximum walk speed, cached on begin play.
+	 */
+	float DefaultMaxWalkSpeed;
 		
 	/**
 	 * \brief Name used for move forward input binding.

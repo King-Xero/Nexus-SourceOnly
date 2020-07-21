@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "ExplosiveDamageType.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -90,6 +91,11 @@ bool ANexusCharacter::IsDead() const
 	return bDead;
 }
 
+bool ANexusCharacter::IsAimingDownSights() const
+{
+	return bAimDownSight;
+}
+
 void ANexusCharacter::StartShooting()
 {
 	if (CurrentWeapon)
@@ -162,6 +168,9 @@ void ANexusCharacter::BeginPlay()
 	// Cache FOV so that we can reset when we stop ADS.
 	DefaultFOV = CameraComponent->FieldOfView;
 
+	// Cache max walk speed so we can reset when we stop ADS.
+	DefaultMaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
 	if (ROLE_Authority == GetLocalRole())
 	{
 		// Set spawn collision handling override.
@@ -220,12 +229,18 @@ void ANexusCharacter::StartADS()
 {
 	// "Zoom" the camera in.
 	bAimDownSight = true;
+
+	// Movement speed is limited while ADS.
+	GetCharacterMovement()->MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeedCrouched;
 }
 
 void ANexusCharacter::EndADS()
 {
 	// "Zoom" the camera out.
 	bAimDownSight = false;
+
+	// Restore movement speed when stopping ADS.
+	GetCharacterMovement()->MaxWalkSpeed = DefaultMaxWalkSpeed;
 }
 
 void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
