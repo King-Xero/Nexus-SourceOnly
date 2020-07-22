@@ -165,8 +165,8 @@ void ANexusWeapon::Fire()
 
 		FVector ShotDirection = EyeRotation.Vector();
 
-		// Add "bullet spread" to shot direction.
-		const float HalfAngleRad = FMath::DegreesToRadians(BulletSpreadAngle);
+		// Add "bullet spread" to shot direction. Shots are/can be more accurate while aiming down sights.
+		const float HalfAngleRad = OwningCharacter && OwningCharacter->IsAimingDownSights() ? FMath::DegreesToRadians(ADSBulletSpreadAngle) : FMath::DegreesToRadians(BulletSpreadAngle);
 		ShotDirection = FMath::VRandCone(ShotDirection, HalfAngleRad);
 		
 		FVector TraceEnd = EyeLocation + (ShotDirection * WeaponRange); // End location for eye trace.

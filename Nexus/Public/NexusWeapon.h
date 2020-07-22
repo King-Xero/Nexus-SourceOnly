@@ -165,6 +165,12 @@ protected:
 	float BulletSpreadAngle = 2.0f;
 
 	/**
+	 * \brief The bullet spread angle of the weapon (in degrees) while aiming down sights.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin = 0.0f))
+	float ADSBulletSpreadAngle = 0.5f;
+
+	/**
 	 * \brief The amount of ammo this weapon spawns with.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
