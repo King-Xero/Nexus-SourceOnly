@@ -42,7 +42,7 @@ public:
 	/**
 	 * \brief Start shooting the weapon.
 	 */
-	virtual void StartFiring();
+	virtual void StartFiring() { }
 
 	/**
 	 * \brief Stop shooting the weapon.
@@ -79,7 +79,7 @@ protected:
 	/**
 	 * \brief Shoot the weapon.
 	 */
-	virtual void Fire();
+	virtual void Fire() { }
 
 	/**
 	 * \brief Shoot the weapon on the server.
