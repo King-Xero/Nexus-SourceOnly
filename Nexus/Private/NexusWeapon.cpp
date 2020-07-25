@@ -60,20 +60,25 @@ void ANexusWeapon::StartReloading()
 {
 	if (CanReloadWeapon())
 	{
-		// Play reload animation.
-		if (OwningCharacter && ReloadAnimMontage)
+		if (OwningCharacter)
 		{
-			const float ReloadMontagePlaybackRate = ReloadAnimMontage->GetPlayLength() / WeaponReloadDelayTime;
+			// Play reload animation.
+			UAnimMontage* ReloadAnimMontage = OwningCharacter->IsAimingDownSights() ? ADSReloadAnimMontage : HipReloadAnimMontage;
+
+			if (ReloadAnimMontage)
+			{
+				const float ReloadMontagePlaybackRate = ReloadAnimMontage->GetPlayLength() / WeaponReloadDelayTime;
 			
-			if (ROLE_Authority > GetLocalRole())
-			{
-				// Play the animation via the server authority.
-				ServerPlayAnimationMontage(ReloadAnimMontage, ReloadMontagePlaybackRate);
-			}
-			else
-			{
-				// Play the animation.
-				MulticastPlayAnimationMontage(ReloadAnimMontage, ReloadMontagePlaybackRate);
+				if (ROLE_Authority > GetLocalRole())
+				{
+					// Play the animation via the server authority.
+					ServerPlayAnimationMontage(ReloadAnimMontage, ReloadMontagePlaybackRate);
+				}
+				else
+				{
+					// Play the animation.
+					MulticastPlayAnimationMontage(ReloadAnimMontage, ReloadMontagePlaybackRate);
+				}
 			}
 		}
 		
@@ -154,7 +159,7 @@ bool ANexusWeapon::CanReloadWeapon()
 	// Check if there is ammo spare that is not in the clip.
 	const bool bAmmoInReserve = CurrentTotalAmmo - CurrentAmmoInClip > 0;
 
-	return bRoomInClip && bAmmoInReserve;
+	return bRoomInClip && bAmmoInReserve && !bReloading;
 }
 
 void ANexusWeapon::Reload()

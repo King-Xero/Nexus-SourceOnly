@@ -255,10 +255,16 @@ protected:
 	TSubclassOf<UCameraShake> WeaponCameraShake;
 
 	/**
-	 * \brief Reload animation montage.
+	 * \brief Reload animation montage for hip fire.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	UAnimMontage* ReloadAnimMontage;
+	UAnimMontage* HipReloadAnimMontage;
+
+	/**
+	 * \brief Reload animation montage for ADS.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* ADSReloadAnimMontage;
 
 	/**
 	 * \brief Sound effect spawned at the weapons's location when it is fired.
