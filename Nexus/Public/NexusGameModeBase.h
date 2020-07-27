@@ -95,6 +95,12 @@ protected:
 	float WaveDelayTime = 10.0f;
 
 	/**
+	 * \brief The duration of the delay between completing a wave and preparing the next wave.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
+	float WaveCompleteDelayTime = 5.0f;
+
+	/**
 	 * \brief Interval at which the check to see if any players are alive is run.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
@@ -142,4 +148,9 @@ private:
 	 * \brief Handle used to manage timer that starts the next wave.
 	 */
 	FTimerHandle TimerHandle_StartNextWave;
+	
+	/**
+	 * \brief Handle used to manage timer that delays the preparation of the next wave after a wave is completed.
+	 */
+	FTimerHandle TimerHandle_WaveComplete;
 };

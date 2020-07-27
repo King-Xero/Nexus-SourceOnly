@@ -96,7 +96,7 @@ void ANexusGameModeBase::CheckEnemiesAlive()
 			SetWaveState(EWaveState::WaveComplete);
 			
 			// If there are no alive enemies, we should prepare the next wave.
-			PrepareForNextWave();
+			GetWorldTimerManager().SetTimer(TimerHandle_WaveComplete, this, &ANexusGameModeBase::PrepareForNextWave, WaveCompleteDelayTime);
 		}
 	}	
 }

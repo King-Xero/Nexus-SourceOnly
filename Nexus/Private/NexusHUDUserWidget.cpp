@@ -39,8 +39,6 @@ void UNexusHUDUserWidget::BindToGameState(ANexusGameState* GameState)
 {
 	GameState->OnWaveStateUpdated.AddDynamic(this, &UNexusHUDUserWidget::WaveStateChanged);
 	GameState->OnWaveNumberUpdated.AddDynamic(this, &UNexusHUDUserWidget::WaveNumberChanged);
-
-	SetWaveNumberAndPublishChange(GameState->GetCurrentWaveNumber());
 }
 
 void UNexusHUDUserWidget::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
@@ -110,7 +108,12 @@ void UNexusHUDUserWidget::SetWaveStateAndPublishChange(EWaveState OldState, EWav
 	OldWaveState = OldState;
 	NewWaveState = NewState;
 
-	// ToDo Publish wave state notification.
+	const FString WaveNotificationText = GetWaveNotificationText(OldState, NewState);
+
+	if(!WaveNotificationText.IsEmpty())
+	{
+		PublishWaveStateNotification(WaveNotificationText);
+	}	
 }
 
 void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(uint8 WaveNumber)
@@ -118,4 +121,24 @@ void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(uint8 WaveNumber)
 	CurrentWaveNumber = WaveNumber;
 
 	PublishWaveNumberChanged(CurrentWaveNumber);
+}
+
+FString UNexusHUDUserWidget::GetWaveNotificationText(EWaveState OldState, EWaveState NewState)
+{
+	switch (NewState)
+	{
+		case EWaveState::PreparingNextWave:
+			return 1 >= CurrentWaveNumber ? PrepareForFirstWaveText : PrepareForNextWaveText;
+		case EWaveState::WaveInProgress:
+			return WaveStartingText;
+		case EWaveState::WaveComplete:
+			return WaveCompleteText;
+		case EWaveState::GameOver:
+		case EWaveState::WaitingToComplete:
+		case EWaveState::Unknown:
+		default:
+			// No notification to display.
+			return FString();
+	}
+	return FString();
 }

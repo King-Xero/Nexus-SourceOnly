@@ -127,6 +127,37 @@ protected:
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void PublishWaveNumberChanged(uint8 WaveNumber);
+
+	/**
+	 * \brief Hook to display wave notification.
+	 * \param NotificationText 
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void PublishWaveStateNotification(const FString& NotificationText);
+
+	/**
+	 * \brief Text to display before first wave.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	FString PrepareForFirstWaveText;
+	
+	/**
+	 * \brief Text to display between waves.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	FString PrepareForNextWaveText;
+
+	/**
+	 * \brief Text to display when a wave starts.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	FString WaveStartingText;
+
+	/**
+	 * \brief Text to display when a wave is completed.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	FString WaveCompleteText;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	float CurrentHealth;
@@ -199,4 +230,12 @@ private:
 	 * \param WaveNumber Wave number to be displayed in the UI.
 	 */
 	void SetWaveNumberAndPublishChange(uint8 WaveNumber);
+
+	/**
+	 * \brief Use the wave states to return the correct text for the notification
+	 * \param OldState 
+	 * \param NewState 
+	 * \return 
+	 */
+	FString GetWaveNotificationText(EWaveState OldState, EWaveState NewState);
 };

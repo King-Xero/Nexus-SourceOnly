@@ -18,11 +18,12 @@ void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 		if (EWaveState::PreparingNextWave == CurrentWaveState)
 		{
 			++CurrentWaveNumber;
+			// Update the wave counter UI.
+			OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
 		}
 
-		// These events will update the wave UI elements on player screens.
+		// Display a wave notification.
 		OnWaveStateUpdated.Broadcast(this, OldWaveState, CurrentWaveState);
-		OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
 	}	
 }
 
