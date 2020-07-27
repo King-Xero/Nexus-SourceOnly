@@ -230,6 +230,8 @@ void ANexusCharacter::StartADS()
 	// "Zoom" the camera in.
 	bAimDownSight = true;
 
+	OnADSUpdated.Broadcast(this, bAimDownSight);
+
 	// Movement speed is limited while ADS.
 	GetCharacterMovement()->MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeedCrouched;
 }
@@ -238,6 +240,8 @@ void ANexusCharacter::EndADS()
 {
 	// "Zoom" the camera out.
 	bAimDownSight = false;
+
+	OnADSUpdated.Broadcast(this, bAimDownSight);
 
 	// Restore movement speed when stopping ADS.
 	GetCharacterMovement()->MaxWalkSpeed = DefaultMaxWalkSpeed;

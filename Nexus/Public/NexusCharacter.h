@@ -11,6 +11,8 @@ class UCameraComponent;
 class USpringArmComponent;
 class UNexusHealthComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnADSUpdatedSignature, ANexusCharacter*, Character, bool, bAmingDownSights);
+
 UCLASS()
 class NEXUS_API ANexusCharacter : public ACharacter
 {
@@ -67,6 +69,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void DeathRagdollCharacter() const;
+
+	/**
+	 * \brief Event used to broadcast ammo updates.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnADSUpdatedSignature OnADSUpdated;
 
 	/**
 	 * \brief Grass footstep sound effect.
@@ -156,6 +164,12 @@ protected:
 	UNexusHealthComponent* CharacterHealthComponent;
 
 	/**
+	 * \brief The weapon the character is currently using.
+	 */
+	UPROPERTY(Replicated)
+	ANexusWeapon* CurrentWeapon;
+
+	/**
 	 * \brief Field of view value for aiming down sights.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
@@ -230,12 +244,6 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	bool bAimDownSight;
-
-	/**
-	 * \brief The weapon the character is currently using.
-	 */
-	UPROPERTY(Replicated)
-	ANexusWeapon* CurrentWeapon;
 
 	/**
 	 * \brief Used to track if the character is dead.

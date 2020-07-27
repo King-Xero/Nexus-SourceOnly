@@ -9,6 +9,8 @@
 class ANexusCharacter;
 class USkeletalMeshComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnWeaponAmmoUpdatedSignature, ANexusWeapon*, Weapon, int32, NewAmmoInClip, int32, NewAmmoInReserve);
+
 USTRUCT()
 struct FHitScanInfo
 {
@@ -64,6 +66,42 @@ public:
 	 * \param NewOwningCharacter
 	 */
 	void SetOwnerAndAttachToCharacter(ANexusCharacter* NewOwningCharacter);
+
+	/**
+	 * \brief Return the amount of ammo currently in the clip.
+	 * \return Amount of ammo.
+	 */
+	int32 GetAmmoInClip() const;
+
+	/**
+	 * \brief Return the amount of ammo currently in reserve.
+	 * \return Amount of ammo.
+	 */
+	int32 GetAmmoInReserve() const;
+
+	/**
+	 * \brief Return the crosshair texture to be used when firing from the hip.
+	 * \return Crosshair texture.
+	 */
+	UTexture* GetHipFireCrosshairTexture() const;
+
+	/**
+	 * \brief Return the crosshair texture to be used when firing whilst aiming down sights.
+	 * \return Crosshair texture.
+	 */
+	UTexture* GetADSCrosshairTexture() const;
+
+	/**
+	 * \brief Return the name of the weapon.
+	 * \return Weapon name.
+	 */
+	FName GetWeaponName() const;
+
+	/**
+	 * \brief Event used to broadcast ammo updates.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnWeaponAmmoUpdatedSignature OnAmmoUpdated;
 	
 protected:
 
@@ -271,6 +309,21 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	USoundBase* FiredSFX;
+
+	/**
+	 * \brief Crosshair texture used when firing from the hip.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UTexture* HipFireCrosshairTexture;
+
+	/**
+	 * \brief Crosshair texture used when firing while aiming down sights.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UTexture* ADSCrosshairTexture;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName WeaponName;
 
 	/**
 	 * \brief Hit scan information for replication.

@@ -111,6 +111,31 @@ void ANexusWeapon::SetOwnerAndAttachToCharacter(ANexusCharacter* NewOwningCharac
 	}	
 }
 
+int32 ANexusWeapon::GetAmmoInClip() const
+{
+	return CurrentAmmoInClip;
+}
+
+int32 ANexusWeapon::GetAmmoInReserve() const
+{
+	return CurrentTotalAmmo - CurrentAmmoInClip;
+}
+
+UTexture* ANexusWeapon::GetHipFireCrosshairTexture() const
+{
+	return HipFireCrosshairTexture;
+}
+
+UTexture* ANexusWeapon::GetADSCrosshairTexture() const
+{
+	return ADSCrosshairTexture;
+}
+
+FName ANexusWeapon::GetWeaponName() const
+{
+	return WeaponName;
+}
+
 // Called when the game starts or when spawned
 void ANexusWeapon::BeginPlay()
 {
@@ -184,6 +209,8 @@ void ANexusWeapon::Reload()
 		// Add bullets to clip.
 		CurrentAmmoInClip += BulletsToReload;
 	}
+
+	OnAmmoUpdated.Broadcast(this, CurrentAmmoInClip, GetAmmoInReserve());
 
 	FNexusLogging::Log(ELogLevel::INFO, "Weapon has finished reloading");
 	bReloading = false;
@@ -335,6 +362,8 @@ void ANexusWeapon::DepleteAmmo()
 	CurrentAmmoInClip = FMath::Max(0, --CurrentAmmoInClip);
 	CurrentTotalAmmo = FMath::Max(0, --CurrentTotalAmmo);
 
+	OnAmmoUpdated.Broadcast(this, CurrentAmmoInClip, GetAmmoInReserve());
+	
 	FStringFormatOrderedArguments LogArgs;
 	LogArgs.Add(FStringFormatArg(CurrentAmmoInClip));
 	LogArgs.Add(FStringFormatArg(CurrentTotalAmmo));
