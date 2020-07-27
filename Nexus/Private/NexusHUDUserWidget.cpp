@@ -5,6 +5,7 @@
 #include "Components/NexusHealthComponent.h"
 #include "NexusWeapon.h"
 #include "NexusPlayerCharacter.h"
+#include "NexusGameState.h"
 
 void UNexusHUDUserWidget::ConfigureHealthAndBindToComponent(UNexusHealthComponent* HealthComponent)
 {
@@ -34,6 +35,14 @@ void UNexusHUDUserWidget::BindToPlayer(ANexusPlayerCharacter* Player)
 	SetActiveCrosshairAndPublishChange(Player->IsAimingDownSights());
 }
 
+void UNexusHUDUserWidget::BindToGameState(ANexusGameState* GameState)
+{
+	GameState->OnWaveStateUpdated.AddDynamic(this, &UNexusHUDUserWidget::WaveStateChanged);
+	GameState->OnWaveNumberUpdated.AddDynamic(this, &UNexusHUDUserWidget::WaveNumberChanged);
+
+	SetWaveNumberAndPublishChange(GameState->GetCurrentWaveNumber());
+}
+
 void UNexusHUDUserWidget::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	SetHealthAndPublishChange(Health, HealthComponent->GetMaxHealth());
@@ -49,6 +58,16 @@ void UNexusHUDUserWidget::ADSChanged(ANexusCharacter* Character, bool bIsPlayerA
 	bAimingDownSight = bIsPlayerAiming;
 
 	SetActiveCrosshairAndPublishChange(bIsPlayerAiming);
+}
+
+void UNexusHUDUserWidget::WaveStateChanged(ANexusGameState* GameState, EWaveState OldState, EWaveState NewState)
+{
+	SetWaveStateAndPublishChange(OldState, NewState);
+}
+
+void UNexusHUDUserWidget::WaveNumberChanged(ANexusGameState* GameState, uint8 WaveNumber)
+{
+	SetWaveNumberAndPublishChange(WaveNumber);
 }
 
 void UNexusHUDUserWidget::SetHealthAndPublishChange(float NewCurrentHealth, float NewMaxHealth)
@@ -84,4 +103,19 @@ void UNexusHUDUserWidget::SetActiveCrosshairAndPublishChange(bool bIsPlayerAimin
 	ActiveCrosshair = bIsPlayerAiming ? ADSCrosshair : HipFireCrosshair;
 
 	PublishCrosshairChanged(ActiveCrosshair);
+}
+
+void UNexusHUDUserWidget::SetWaveStateAndPublishChange(EWaveState OldState, EWaveState NewState)
+{
+	OldWaveState = OldState;
+	NewWaveState = NewState;
+
+	// ToDo Publish wave state notification.
+}
+
+void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(uint8 WaveNumber)
+{
+	CurrentWaveNumber = WaveNumber;
+
+	PublishWaveNumberChanged(CurrentWaveNumber);
 }

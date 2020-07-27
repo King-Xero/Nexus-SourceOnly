@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "NexusHUDUserWidget.generated.h"
 
+enum class EWaveState : unsigned char;
+class ANexusGameState;
 class ANexusCharacter;
 class ANexusPlayerCharacter;
 class ANexusWeapon;
@@ -36,6 +38,12 @@ public:
 	 */
 	void BindToPlayer(ANexusPlayerCharacter* Player);
 
+	/**
+	 * \brief Bind to game state for wave updates.
+	 * \param GameState
+	 */
+	void BindToGameState(ANexusGameState* GameState);
+
 protected:
 
 	/**
@@ -60,12 +68,29 @@ protected:
 	void AmmoChanged(ANexusWeapon* Weapon, int32 NewAmmoInClip, int32 NewAmmoInReserve);
 
 	/**
-	 * \brief Respond to the character changing their aiming. Wired up to characters 
+	 * \brief Respond to the character changing their aiming. Wired up to characters OnADSUpdated event.
 	 * \param Character The player character that is changing.
 	 * \param bIsPlayerAiming Is the player aiming down sights.
 	 */
 	UFUNCTION()
 	void ADSChanged(ANexusCharacter* Character, bool bIsPlayerAiming);
+
+	/**
+	 * \brief Respond to the wave state changing. Wired up to gamestates OnWaveStateUpdated event.
+	 * \param GameState 
+	 * \param OldState Wave state that is being exited.
+	 * \param NewState Wave state that is being entered.
+	 */
+	UFUNCTION()
+	void WaveStateChanged(ANexusGameState* GameState, EWaveState OldState, EWaveState NewState);
+
+	/**
+	 * \brief Respond to the wave number increasing. Wired up to gamestates OnWaveNumberUpdated event.
+	 * \param GameState 
+	 * \param WaveNumber The wave number to be displayed in the UI.
+	 */
+	UFUNCTION()
+	void WaveNumberChanged(ANexusGameState* GameState, uint8 WaveNumber);
 
 	/**
 	 * \brief Hook to update health UI elements.
@@ -95,6 +120,13 @@ protected:
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void PublishCrosshairChanged(UTexture* CrosshairTexture);
+
+	/**
+	 * \brief Hook to update the wave number UI element.
+	 * \param CurrentWaveNumber 
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void PublishWaveNumberChanged(uint8 WaveNumber);
 	
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	float CurrentHealth;
@@ -118,6 +150,14 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	bool bAimingDownSight;
+
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	EWaveState OldWaveState;
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	EWaveState NewWaveState;
+
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	uint8 CurrentWaveNumber;
 	
 private:
 
@@ -146,4 +186,17 @@ private:
 	 * \param bIsPlayerAiming Is the player aiming down sights.
 	 */
 	void SetActiveCrosshairAndPublishChange(bool bIsPlayerAiming);
+
+	/**
+	 * \brief Set the wave states and publish UI update.
+	 * \param OldState Wave state that is being exited.
+	 * \param NewState Wave state that is being entered.
+	 */
+	void SetWaveStateAndPublishChange(EWaveState OldState, EWaveState NewState);
+
+	/**
+	 * \brief Set the wave number and publish UI update.
+	 * \param WaveNumber Wave number to be displayed in the UI.
+	 */
+	void SetWaveNumberAndPublishChange(uint8 WaveNumber);
 };

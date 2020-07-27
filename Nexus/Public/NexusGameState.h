@@ -38,6 +38,9 @@ enum class EWaveState : uint8
 	GameOver			UMETA(DisplayName = "Game over"),
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnWaveStateUpdatedSignature, ANexusGameState*, GameState, EWaveState, OldState, EWaveState, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWaveNumberUpdatedSignature, ANexusGameState*, GameState, uint8, WaveNumber);
+
 /**
  * 
  */
@@ -47,17 +50,30 @@ class NEXUS_API ANexusGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * \brief Set the current wave state.
 	 * \param NewWaveState The wave state that the match is entering.
 	 */
 	void SetWaveState(EWaveState NewWaveState);
-	
+
+	/**
+	 * \brief Return the current wave number.
+	 * \return Current wave number.
+	 */
+	uint8 GetCurrentWaveNumber() const;
+
 	UPROPERTY(ReplicatedUsing=OnRep_WaveState, BlueprintReadOnly, Category = "GameState")
 	EWaveState CurrentWaveState;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnWaveStateUpdatedSignature OnWaveStateUpdated;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnWaveNumberUpdatedSignature OnWaveNumberUpdated;
+
 protected:
+	
+	virtual void BeginPlay() override;
 	
 	/**
 	 * \brief Replicate the game/match wave state.
@@ -67,10 +83,19 @@ protected:
 	void OnRep_WaveState(EWaveState OldState);
 
 	/**
+	 * \brief Publish update event when wave number is replicated.
+	 */
+	UFUNCTION()
+	void OnRep_CurrentWaveNumber();
+
+	/**
 	 * \brief Hook to implement wave state change in blueprint.
 	 * \param OldState The wave state that the match is leaving.
 	 * \param NewState The wave state that the match is entering.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameState")
 	void WaveStateChanged(EWaveState OldState, EWaveState NewState);
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentWaveNumber, BlueprintReadOnly, Category = "GameState")
+	uint8 CurrentWaveNumber;
 };

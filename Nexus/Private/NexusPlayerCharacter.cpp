@@ -3,6 +3,7 @@
 #include "NexusPlayerCharacter.h"
 #include "Blueprint/UserWidget.h"
 #include "NexusHUDUserWidget.h"
+#include "NexusGameState.h"
 
 void ANexusPlayerCharacter::BeginPlay()
 {
@@ -26,6 +27,9 @@ void ANexusPlayerCharacter::BeginPlay()
 			
 			// Configure weapon variables and bind to current weapon for ammo updates.
 			CurrentHUDWidget->ConfigureAndBindWeapon(CurrentWeapon);
+
+			// Bind to game state for wave updates.
+			CurrentHUDWidget->BindToGameState(GetWorld()->GetGameState<ANexusGameState>());
 		}
 	}
 }
