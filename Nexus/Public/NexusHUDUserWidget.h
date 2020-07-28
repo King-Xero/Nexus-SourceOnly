@@ -238,4 +238,9 @@ private:
 	 * \return 
 	 */
 	FString GetWaveNotificationText(EWaveState OldState, EWaveState NewState);
+
+	/**
+	 * \brief Pointer to the currently equipped weapon.
+	 */
+	ANexusWeapon* CurrentWeapon;
 };

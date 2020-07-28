@@ -62,10 +62,10 @@ public:
 	virtual void StopReloading();
 
 	/**
-	 * \brief Set the actor owner, and attach the actor to the character.
+	 * \brief Set the actor owner.
 	 * \param NewOwningCharacter
 	 */
-	void SetOwnerAndAttachToCharacter(ANexusCharacter* NewOwningCharacter);
+	void SetOwningCharacter(ANexusCharacter* NewOwningCharacter);
 
 	/**
 	 * \brief Return the amount of ammo currently in the clip.
@@ -330,12 +330,6 @@ protected:
 	 */
 	UPROPERTY(ReplicatedUsing=OnRep_HitScanInfo)
 	FHitScanInfo HitScanInfo;
-
-	/**
-	 * \brief Name of the character socket the weapon should be attached to.
-	 */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	FName WeaponSocketName = "hand_rSocket";
 
 	/**
 	 * \brief The character that currently owns this weapon.

@@ -6,6 +6,15 @@
 #include "NexusGameState.h"
 #include "Kismet/GameplayStatics.h"
 
+void ANexusPlayerCharacter::SwapWeapon()
+{
+	// Call super for swap weapon functionality
+	Super::SwapWeapon();
+
+	// Configure weapon variables and bind to current weapon for ammo updates.
+	CurrentHUDWidget->ConfigureAndBindWeapon(CurrentWeapon);
+}
+
 void ANexusPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();

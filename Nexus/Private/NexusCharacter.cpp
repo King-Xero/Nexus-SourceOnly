@@ -73,6 +73,8 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction(ShootBindingName, IE_Released, this, &ANexusCharacter::StopShooting);
 
 	PlayerInputComponent->BindAction(ReloadBindingName, IE_Released, this, &ANexusCharacter::StartReloading);
+	
+	PlayerInputComponent->BindAction(SwapWeaponBindingName, IE_Released, this, &ANexusCharacter::SwapWeapon);
 }
 
 FVector ANexusCharacter::GetPawnViewLocation() const
@@ -149,6 +151,22 @@ void ANexusCharacter::DeathRagdollCharacter() const
 	}
 }
 
+void ANexusCharacter::SwapWeapon()
+{
+	if (CurrentWeapon && OffHandWeapon)
+	{
+		ANexusWeapon* WeaponToEquip = OffHandWeapon;
+
+		// Stash the current weapon
+		OffHandWeapon = CurrentWeapon;
+		AttachWeaponToSocket(OffHandWeapon, OffHandWeapon1SocketName);
+
+		// Equip the offhand weapon.
+		CurrentWeapon = WeaponToEquip;
+		AttachWeaponToSocket(CurrentWeapon, EquippedWeaponSocketName);
+	}	
+}
+
 void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -171,21 +189,8 @@ void ANexusCharacter::BeginPlay()
 	// Cache max walk speed so we can reset when we stop ADS.
 	DefaultMaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
-	if (ROLE_Authority == GetLocalRole())
-	{
-		// Set spawn collision handling override.
-		FActorSpawnParameters ActorSpawnParams;
-		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		// Spawn the default character weapon
-		CurrentWeapon = GetWorld()->SpawnActor<ANexusWeapon>(SpawnWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, ActorSpawnParams);
-
-		if (CurrentWeapon)
-		{
-			CurrentWeapon->SetOwnerAndAttachToCharacter(this);
-		}
-	}	
-
+	SpawnAndAttachStartingWeapons();
+	
 	// Wire up health changed event.
 	CharacterHealthComponent->OnHealthChanged.AddDynamic(this, &ANexusCharacter::HealthChanged);
 }
@@ -331,4 +336,42 @@ void ANexusCharacter::PlayDeathAnimation() const
 	{
 		GetMesh()->PlayAnimation(DeathAnimation, false);
 	}	
+}
+
+void ANexusCharacter::SpawnAndAttachStartingWeapons()
+{
+	if (ROLE_Authority == GetLocalRole())
+	{
+		if (SpawnPrimaryWeaponClass)
+		{
+			SpawnAndAttachWeapon(CurrentWeapon, SpawnPrimaryWeaponClass, EquippedWeaponSocketName);
+		}
+		if (SpawnSecondaryWeaponClass)
+		{
+			SpawnAndAttachWeapon(OffHandWeapon, SpawnSecondaryWeaponClass, OffHandWeapon1SocketName);
+		}
+	}
+}
+
+void ANexusCharacter::SpawnAndAttachWeapon(ANexusWeapon*& WeaponPointer, const TSubclassOf<ANexusWeapon>& WeaponClass, const FName& SocketName)
+{
+	// Set spawn collision handling override.
+	FActorSpawnParameters ActorSpawnParams;
+	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	// Create an instance of the weapon class.
+	WeaponPointer = GetWorld()->SpawnActor<ANexusWeapon>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, ActorSpawnParams);
+
+	if (WeaponPointer)
+	{
+		WeaponPointer->SetOwningCharacter(this);
+
+		AttachWeaponToSocket(WeaponPointer, SocketName);
+	}
+}
+
+void ANexusCharacter::AttachWeaponToSocket(ANexusWeapon*& Weapon, const FName& SocketName)
+{
+	// Attach the weapon to the character's socket.
+	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 }

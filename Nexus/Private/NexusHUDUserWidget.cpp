@@ -16,16 +16,28 @@ void UNexusHUDUserWidget::ConfigureHealthAndBindToComponent(UNexusHealthComponen
 
 void UNexusHUDUserWidget::ConfigureAndBindWeapon(ANexusWeapon* Weapon)
 {
-	SetAmmoAndPublishChange(Weapon->GetAmmoInClip(), Weapon->GetAmmoInReserve());
-	
-	HipFireCrosshair = Weapon->GetHipFireCrosshairTexture();
-	ADSCrosshair = Weapon->GetADSCrosshairTexture();
+	// Should not rebind to the same weapon
+	if (CurrentWeapon != Weapon)
+	{
+		if (CurrentWeapon)
+		{
+			// The UI should no longer listen for updates from the old weapon.
+			CurrentWeapon->OnAmmoUpdated.RemoveAll(this);
+		}
 
-	SetWeaponNameAndPublishChange(Weapon->GetWeaponName());
+		CurrentWeapon = Weapon;
+		
+		SetAmmoAndPublishChange(Weapon->GetAmmoInClip(), Weapon->GetAmmoInReserve());
 
-	SetActiveCrosshairAndPublishChange(bAimingDownSight);
+		HipFireCrosshair = Weapon->GetHipFireCrosshairTexture();
+		ADSCrosshair = Weapon->GetADSCrosshairTexture();
 
-	Weapon->OnAmmoUpdated.AddDynamic(this, &UNexusHUDUserWidget::AmmoChanged);
+		SetWeaponNameAndPublishChange(Weapon->GetWeaponName());
+
+		SetActiveCrosshairAndPublishChange(bAimingDownSight);
+
+		Weapon->OnAmmoUpdated.AddDynamic(this, &UNexusHUDUserWidget::AmmoChanged);
+	}	
 }
 
 void UNexusHUDUserWidget::BindToPlayer(ANexusPlayerCharacter* Player)

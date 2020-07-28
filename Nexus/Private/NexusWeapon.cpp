@@ -99,15 +99,13 @@ void ANexusWeapon::StopReloading()
 	FNexusLogging::Log(ELogLevel::INFO, "Weapon reloading was stopped.");	
 }
 
-void ANexusWeapon::SetOwnerAndAttachToCharacter(ANexusCharacter* NewOwningCharacter)
+void ANexusWeapon::SetOwningCharacter(ANexusCharacter* NewOwningCharacter)
 {
 	if (OwningCharacter != NewOwningCharacter)
 	{
 		OwningCharacter = NewOwningCharacter;
 		// Set owner for use in fire function.
 		SetOwner(OwningCharacter);
-		// Attach the weapon to the character's hand.
-		AttachToComponent(OwningCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
 	}	
 }
 
@@ -152,8 +150,11 @@ void ANexusWeapon::BeginPlay()
 bool ANexusWeapon::CanFireWeapon() const
 {
 	const bool bAmmoInClip = 0 < CurrentAmmoInClip;
+
+	// Check if the weapon has an owner, and that owner is alive.
+	const bool bOwnerAlive = OwningCharacter ? !OwningCharacter->IsDead() : false;
 	
-	return bAmmoInClip && !bReloading;
+	return bAmmoInClip && !bReloading && bOwnerAlive;
 }
 
 void ANexusWeapon::ServerFire_Implementation()

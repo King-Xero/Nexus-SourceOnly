@@ -71,6 +71,12 @@ public:
 	void DeathRagdollCharacter() const;
 
 	/**
+	 * \brief Make the character swap the currently equipped weapon.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	virtual void SwapWeapon();
+
+	/**
 	 * \brief Event used to broadcast ammo updates.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -170,6 +176,12 @@ protected:
 	ANexusWeapon* CurrentWeapon;
 
 	/**
+	 * \brief A weapon the character has stashed.
+	 */
+	UPROPERTY(Replicated)
+	ANexusWeapon* OffHandWeapon;
+
+	/**
 	 * \brief Field of view value for aiming down sights.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
@@ -182,10 +194,16 @@ protected:
 	float ADSInterpolationSpeed = 20.0f;
 
 	/**
-	 * \brief Weapon that the character should spawn with.
+	 * \brief Primary weapon that the character should spawn with.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
-	TSubclassOf<ANexusWeapon> SpawnWeaponClass;
+	TSubclassOf<ANexusWeapon> SpawnPrimaryWeaponClass;
+
+	/**
+	 * \brief Secondary weapon that the character should spawn with.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	TSubclassOf<ANexusWeapon> SpawnSecondaryWeaponClass;
 
 	/**
 	 * \brief The number of seconds until the character is destroyed, after the character dies. (0 = character will not be destroyed)
@@ -210,6 +228,18 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	TArray<UAnimSequence*> DeathAnimations;
+
+	/**
+	 * \brief Name of the character socket a weapon should be attached to when equipped.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName EquippedWeaponSocketName = "hand_rSocket";
+
+	/**
+	 * \brief Name of the character socket a weapon should be attached to when not in use.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName OffHandWeapon1SocketName = "Weapon1Socket";
 	
 private:
 
@@ -233,6 +263,25 @@ private:
 	 * \brief Play random death animation from available animations.
 	 */
 	void PlayDeathAnimation() const;
+	/**
+	 * \brief Spawn the weapons this character starts with and attach them to the character mesh.
+	 */
+	void SpawnAndAttachStartingWeapons();
+
+	/**
+	 * \brief Spawn an instance of the given weapon class, store it in the given pointer, and attach it to the passed socket.
+	 * \param WeaponPointer 
+	 * \param WeaponClass 
+	 * \param SocketName 
+	 */
+	void SpawnAndAttachWeapon(ANexusWeapon*& WeaponPointer, const TSubclassOf<ANexusWeapon>& WeaponClass, const FName& SocketName);
+
+	/**
+	 * \brief Attach given weapon to the given socket on the character.
+	 * \param Weapon 
+	 * \param SocketName 
+	 */
+	void AttachWeaponToSocket(ANexusWeapon*& Weapon, const FName& SocketName);
 	
 	/**
 	 * \brief Default FOV value for the camera, cached on begin play.
@@ -300,6 +349,11 @@ private:
 	 * \brief Name used for reload input binding.
 	 */
 	const FName ReloadBindingName = "Reload";
+
+	/**
+	 * \brief Name used for swap weapon input binding.
+	 */
+	const FName SwapWeaponBindingName = "SwapWeapon";
 
 	/**
 	 * \brief Weighting used to blend between ragdoll physics and animation.

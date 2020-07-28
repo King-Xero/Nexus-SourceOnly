@@ -13,6 +13,13 @@ class NEXUS_API ANexusPlayerCharacter : public ANexusCharacter
 {
 	GENERATED_BODY()
 
+public:
+
+	/**
+	 * \brief Make the character swap the currently equipped weapon.
+	 */
+	virtual void SwapWeapon() override;
+
 protected:
 
 	// Called when the game starts or when spawned
