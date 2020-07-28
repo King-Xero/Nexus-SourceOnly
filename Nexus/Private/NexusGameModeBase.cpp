@@ -140,6 +140,13 @@ void ANexusGameModeBase::GameOver()
 	// The match has ended.
 	SetWaveState(EWaveState::GameOver);
 
+	ANexusGameState* CurrentGameState = GetGameState<ANexusGameState>();
+	if (CurrentGameState)
+	{
+		// Call game over on game state for server and all clients.
+		CurrentGameState->MulticastOnGameOver();
+	}
+
 	FNexusLogging::Log(ELogLevel::INFO, TEXT("All players dead. Game Over!!!"));
 }
 

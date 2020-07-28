@@ -281,7 +281,7 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		cMovementComponent->SetComponentTickEnabled(false);
 
 		// Disable further movement and camera control.
-		DetachFromControllerPendingDestroy();
+		/*DetachFromControllerPendingDestroy();*/
 
 		// Setting the lifespan will cause the character/weapons to be destroyed after the time value passed.
 		SetLifeSpan(DeathLifeSpan);

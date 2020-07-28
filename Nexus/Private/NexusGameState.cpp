@@ -2,6 +2,7 @@
 
 #include "NexusGameState.h"
 #include "Net/UnrealNetwork.h"
+#include "Blueprint/UserWidget.h"
 
 void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 {
@@ -60,4 +61,12 @@ void ANexusGameState::OnRep_WaveState(EWaveState OldState)
 void ANexusGameState::OnRep_CurrentWaveNumber()
 {
 	OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
+}
+
+void ANexusGameState::MulticastOnGameOver_Implementation()
+{
+	// Create and show the game over widget.
+	UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
+
+	GameOverWidget->AddToViewport();
 }

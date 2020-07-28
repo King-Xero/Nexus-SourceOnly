@@ -143,7 +143,7 @@ protected:
 	 * \param DamageCauser The actor that inflicted the health change. (player, weapon, etc)
 	 */
 	UFUNCTION()
-	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	virtual void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	/**
 	 * \brief Third person camera component

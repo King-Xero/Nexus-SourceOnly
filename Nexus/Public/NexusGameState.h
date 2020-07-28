@@ -61,7 +61,13 @@ public:
 	 * \return Current wave number.
 	 */
 	uint8 GetCurrentWaveNumber() const;
-
+	
+	/**
+	 * \brief Called on the server and all network clients on game over.
+	 */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnGameOver();
+	
 	UPROPERTY(ReplicatedUsing=OnRep_WaveState, BlueprintReadOnly, Category = "GameState")
 	EWaveState CurrentWaveState;
 
@@ -95,6 +101,12 @@ protected:
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameState")
 	void WaveStateChanged(EWaveState OldState, EWaveState NewState);
+
+	/**
+	 * \brief UI widget to display on game over.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentWaveNumber, BlueprintReadOnly, Category = "GameState")
 	uint8 CurrentWaveNumber;

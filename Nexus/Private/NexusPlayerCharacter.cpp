@@ -4,6 +4,7 @@
 #include "Blueprint/UserWidget.h"
 #include "NexusHUDUserWidget.h"
 #include "NexusGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 void ANexusPlayerCharacter::BeginPlay()
 {
@@ -31,5 +32,31 @@ void ANexusPlayerCharacter::BeginPlay()
 			// Bind to game state for wave updates.
 			CurrentHUDWidget->BindToGameState(GetWorld()->GetGameState<ANexusGameState>());
 		}
+	}
+}
+
+void ANexusPlayerCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	Super::HealthChanged(HealthComponent, Health, HealthDelta, DamageType, InstigatedBy, DamageCauser);
+
+	// Dead flag is set in super.
+	if (IsDead())
+	{
+		// Remove the HUD from the players screen.
+		CurrentHUDWidget->RemoveFromViewport();
+		
+		APlayerController* PlayerController = GetController<APlayerController>();
+
+		// Find the game over view target actor.
+		AActor* GameOverViewTarget = UGameplayStatics::GetActorOfClass(this, GameOverViewTargetClass);
+
+		if (PlayerController && GameOverViewTarget)
+		{
+			// Change the players camera view to that of the GameOverViewTarget actor.
+			PlayerController->SetViewTargetWithBlend(GameOverViewTarget, GameOverViewBlendTime, EViewTargetBlendFunction::VTBlend_Cubic);
+		}
+
+		// Stop the player from being destroyed so that camera doesn't shift.
+		SetLifeSpan(0);
 	}
 }
