@@ -47,7 +47,7 @@ void ANexusWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLi
 	// Replicate the weapon owner. Required for animation replication.
 	DOREPLIFETIME(ANexusWeapon, OwningCharacter);
 
-	DOREPLIFETIME(ANexusWeapon, bReloading);
+	DOREPLIFETIME(ANexusWeapon, CurrentWeaponState);
 }
 
 void ANexusWeapon::StopFiring()
@@ -85,7 +85,7 @@ void ANexusWeapon::StartReloading()
 		// Start timer to reload the weapon.
 		GetWorldTimerManager().SetTimer(TimerHandle_WeaponReloadDelay, this, &ANexusWeapon::Reload, WeaponReloadDelayTime);
 
-		bReloading = true;
+		SetWeaponState(EWeaponState::Reloading);
 		FNexusLogging::Log(ELogLevel::INFO, "Weapon has started reloading");
 	}	
 }
@@ -95,12 +95,14 @@ void ANexusWeapon::StopReloading()
 	// Stop timer to stop reloading the weapon.
 	GetWorldTimerManager().ClearTimer(TimerHandle_WeaponReloadDelay);
 
-	bReloading = false;
+	SetWeaponState(EWeaponState::Idle);
 	FNexusLogging::Log(ELogLevel::INFO, "Weapon reloading was stopped.");	
 }
 
 void ANexusWeapon::SetOwningCharacter(ANexusCharacter* NewOwningCharacter)
 {
+	SetWeaponState(EWeaponState::Idle);
+	
 	if (OwningCharacter != NewOwningCharacter)
 	{
 		OwningCharacter = NewOwningCharacter;
@@ -134,6 +136,16 @@ FName ANexusWeapon::GetWeaponName() const
 	return WeaponName;
 }
 
+bool ANexusWeapon::CanWeaponBeSwapped() const
+{
+	return EWeaponState::Swapping != CurrentWeaponState;
+}
+
+void ANexusWeapon::SetWeaponState(EWeaponState NewWeaponState)
+{
+	CurrentWeaponState = NewWeaponState;
+}
+
 // Called when the game starts or when spawned
 void ANexusWeapon::BeginPlay()
 {
@@ -153,8 +165,11 @@ bool ANexusWeapon::CanFireWeapon() const
 
 	// Check if the weapon has an owner, and that owner is alive.
 	const bool bOwnerAlive = OwningCharacter ? !OwningCharacter->IsDead() : false;
+
+	// Check that the weapon state will allow firing.
+	const bool bFiringAllowed = EWeaponState::Firing == CurrentWeaponState || EWeaponState::Idle == CurrentWeaponState;
 	
-	return bAmmoInClip && !bReloading && bOwnerAlive;
+	return bAmmoInClip && bFiringAllowed && bOwnerAlive;
 }
 
 void ANexusWeapon::ServerFire_Implementation()
@@ -184,8 +199,10 @@ bool ANexusWeapon::CanReloadWeapon()
 	const bool bRoomInClip = CurrentAmmoInClip < MaxAmmoPerClip;
 	// Check if there is ammo spare that is not in the clip.
 	const bool bAmmoInReserve = CurrentTotalAmmo - CurrentAmmoInClip > 0;
-
-	return bRoomInClip && bAmmoInReserve && !bReloading;
+	// Check that the weapon state will allow reloading.
+	const bool bReloadingAllowed = EWeaponState::Idle == CurrentWeaponState || EWeaponState::Firing == CurrentWeaponState;
+	
+	return bRoomInClip && bAmmoInReserve && bReloadingAllowed;
 }
 
 void ANexusWeapon::Reload()
@@ -214,7 +231,7 @@ void ANexusWeapon::Reload()
 	OnAmmoUpdated.Broadcast(this, CurrentAmmoInClip, GetAmmoInReserve());
 
 	FNexusLogging::Log(ELogLevel::INFO, "Weapon has finished reloading");
-	bReloading = false;
+	SetWeaponState(EWeaponState::Idle);
 }
 
 void ANexusWeapon::ServerReload_Implementation()

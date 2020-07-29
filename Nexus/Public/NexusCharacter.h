@@ -74,7 +74,18 @@ public:
 	 * \brief Make the character swap the currently equipped weapon.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Player")
+	virtual void InitiateWeaponSwap();
+	
+	/**
+	 * \brief Swap the characters equipped and offhand weapons.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	virtual void SwapWeapon();
+
+	/**
+	 * \brief Ready the equipped weapon after a weapon swap. Called via UWeaponSwapAnimNotifyState.
+	 */
+	void PrepareWeaponAfterSwap() const;
 
 	/**
 	 * \brief Event used to broadcast ammo updates.
@@ -150,6 +161,18 @@ protected:
 	 */
 	UFUNCTION()
 	virtual void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+	/**
+	 * \brief Call the server to play an animation montage.
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate = 1.0f);
+
+	/**
+	 * \brief Execute the animation montage on the server and all clients.
+	 */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate);
 
 	/**
 	 * \brief Third person camera component
@@ -228,6 +251,18 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	TArray<UAnimSequence*> DeathAnimations;
+
+	/**
+	 * \brief Animation montage used to swap weapon. (Should call SwapWeapon() via anim notify)
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	UAnimMontage* WeaponSwapAnimMontage;
+
+	/**
+	 * \brief The time it takes to swap weapons.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	float WeaponSwapDuration = 5.0f;
 
 	/**
 	 * \brief Name of the character socket a weapon should be attached to when equipped.

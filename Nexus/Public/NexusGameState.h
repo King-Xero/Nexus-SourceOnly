@@ -7,7 +7,7 @@
 #include "NexusGameState.generated.h"
 
 /**
- * \brief Used to declare the output method for log messages.
+ * \brief Used to track the current phase of the wave system.
  */
 UENUM(BlueprintType)
 enum class EWaveState : uint8

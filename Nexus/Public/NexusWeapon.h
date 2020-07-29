@@ -29,6 +29,38 @@ struct FHitScanInfo
 	FVector_NetQuantize TraceTargetLocation;
 };
 
+/**
+ * \brief Used to track the current weapon activity.
+ */
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	/**
+	 * \brief Invalid weapon state.
+	 */
+	Unknown				UMETA(DisplayName = "Unknown"),
+	/**
+	 * \brief Weapon is equipped, but not doing anything.
+	 */
+	Idle				UMETA(DisplayName = "Idle"),
+	/**
+	 * \brief Weapon is equipped and being fired.
+	 */
+	Firing				UMETA(DisplayName = "Firing"),
+	/**
+	 * \brief Weapon is equipped and being reloaded.
+	 */
+	Reloading			UMETA(DisplayName = "Reloading"),
+	/**
+	 * \brief Weapon is equipped and being swapped out.
+	 */
+	Swapping			UMETA(DisplayName = "Swapping"),
+	/**
+	 * \brief Weapon is not equipped.
+	 */
+	Offhand				UMETA(DisplayName = "Offhand"),	
+};
+
 UCLASS()
 class NEXUS_API ANexusWeapon : public AActor
 {
@@ -44,7 +76,7 @@ public:
 	/**
 	 * \brief Start shooting the weapon.
 	 */
-	virtual void StartFiring() { }
+	virtual void StartFiring(){};
 
 	/**
 	 * \brief Stop shooting the weapon.
@@ -96,6 +128,18 @@ public:
 	 * \return Weapon name.
 	 */
 	FName GetWeaponName() const;
+
+	/**
+	 * \brief Check if the weapon can be swapped out.
+	 * \return 
+	 */
+	bool CanWeaponBeSwapped() const;
+	
+	/**
+	 * \brief Set the current state of the weapon.
+	 * \param NewWeaponState
+	 */
+	void SetWeaponState(EWeaponState NewWeaponState);
 
 	/**
 	 * \brief Event used to broadcast ammo updates.
@@ -338,10 +382,10 @@ protected:
 	ANexusCharacter* OwningCharacter;
 
 	/**
-	 * \brief Used to track if the weapon is currently reloading.
+	 * \brief Used to track if the weapon is currently reloading/swapping/firing.
 	 */
 	UPROPERTY(Replicated)
-	bool bReloading;
+	EWeaponState CurrentWeaponState;
 
 	/**
 	 * \brief Play all effects for when the weapon hits something.

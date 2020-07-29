@@ -74,7 +74,7 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	PlayerInputComponent->BindAction(ReloadBindingName, IE_Released, this, &ANexusCharacter::StartReloading);
 	
-	PlayerInputComponent->BindAction(SwapWeaponBindingName, IE_Released, this, &ANexusCharacter::SwapWeapon);
+	PlayerInputComponent->BindAction(SwapWeaponBindingName, IE_Released, this, &ANexusCharacter::InitiateWeaponSwap);
 }
 
 FVector ANexusCharacter::GetPawnViewLocation() const
@@ -151,6 +151,32 @@ void ANexusCharacter::DeathRagdollCharacter() const
 	}
 }
 
+void ANexusCharacter::InitiateWeaponSwap()
+{
+	if (CurrentWeapon && OffHandWeapon && CurrentWeapon->CanWeaponBeSwapped() && WeaponSwapAnimMontage)
+	{
+		// Play reload animation.
+		const float SwapMontagePlaybackRate = WeaponSwapAnimMontage->GetPlayLength() / WeaponSwapDuration;
+
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the animation via the server authority.
+			ServerPlayAnimationMontage(WeaponSwapAnimMontage, SwapMontagePlaybackRate);
+		}
+		else
+		{
+			// Play the animation.
+			MulticastPlayAnimationMontage(WeaponSwapAnimMontage, SwapMontagePlaybackRate);
+		}
+
+		// Reloading should be cancelled and firing stopped when the weapon is swapped.
+		CurrentWeapon->StopReloading();
+		CurrentWeapon->StopFiring();
+		
+		CurrentWeapon->SetWeaponState(EWeaponState::Swapping);
+	}
+}
+
 void ANexusCharacter::SwapWeapon()
 {
 	if (CurrentWeapon && OffHandWeapon)
@@ -159,12 +185,23 @@ void ANexusCharacter::SwapWeapon()
 
 		// Stash the current weapon
 		OffHandWeapon = CurrentWeapon;
+		OffHandWeapon->SetWeaponState(EWeaponState::Offhand);
 		AttachWeaponToSocket(OffHandWeapon, OffHandWeapon1SocketName);
 
 		// Equip the offhand weapon.
 		CurrentWeapon = WeaponToEquip;
+		CurrentWeapon->SetWeaponState(EWeaponState::Swapping);
 		AttachWeaponToSocket(CurrentWeapon, EquippedWeaponSocketName);
 	}	
+}
+
+void ANexusCharacter::PrepareWeaponAfterSwap() const
+{
+	if (CurrentWeapon)
+	{
+		// Weapon should be in idle state when its swapped in.
+		CurrentWeapon->SetWeaponState(EWeaponState::Idle);
+	}
 }
 
 void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -298,6 +335,21 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 	}
 }
 
+void ANexusCharacter::ServerPlayAnimationMontage_Implementation(UAnimMontage* AnimMontage, float PlaybackRate)
+{
+	// To get something to execute on all clients (and the server), you need to use a NetMulticast function, that is called from the server.
+	// So to play an animation on all clients, we must call (from a client/server) this function that will execute on the server. Now executing
+	// on the server, we call the below function, which will be executed on all connected clients.
+
+	MulticastPlayAnimationMontage(AnimMontage, PlaybackRate);
+}
+
+void ANexusCharacter::MulticastPlayAnimationMontage_Implementation(UAnimMontage* AnimMontage, float PlaybackRate)
+{
+	// Although this function is called on all clients, OwningCharacter must also be replicated for the animation to be played.
+	PlayAnimMontage(AnimMontage, PlaybackRate);
+}
+
 void ANexusCharacter::SetAimDownSight(float DeltaTime)
 {
 	// Interpolate the aim down sight for a smooth aim in/out.
@@ -345,10 +397,14 @@ void ANexusCharacter::SpawnAndAttachStartingWeapons()
 		if (SpawnPrimaryWeaponClass)
 		{
 			SpawnAndAttachWeapon(CurrentWeapon, SpawnPrimaryWeaponClass, EquippedWeaponSocketName);
+			// Equipped weapon should start in idle state.
+			CurrentWeapon->SetWeaponState(EWeaponState::Idle);
 		}
 		if (SpawnSecondaryWeaponClass)
 		{
 			SpawnAndAttachWeapon(OffHandWeapon, SpawnSecondaryWeaponClass, OffHandWeapon1SocketName);
+			// Offhand weapon should start in offhand state.
+			OffHandWeapon->SetWeaponState(EWeaponState::Offhand);
 		}
 	}
 }

@@ -25,6 +25,8 @@ void AShotgun::Fire()
 
 	if (WeaponOwner && CanFireWeapon())
 	{
+		SetWeaponState(EWeaponState::Firing);
+		
 		// Fire should only be called via the server authority.
 		if (ROLE_Authority > GetLocalRole())
 		{
