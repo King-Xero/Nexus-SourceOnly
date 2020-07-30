@@ -10,6 +10,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class UNexusHealthComponent;
+class USceneCaptureComponent2D;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnADSUpdatedSignature, ANexusCharacter*, Character, bool, bAmingDownSights);
 
@@ -181,6 +182,12 @@ protected:
 	UCameraComponent* CameraComponent;
 
 	/**
+	 * \brief Component used to capture character to render in UI.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USceneCaptureComponent2D* CharacterCaptureComponent;
+
+	/**
 	 * \brief Component used to mount the camera.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -281,6 +288,12 @@ protected:
 	 */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName OffHandWeapon1SocketName = "Weapon1Socket";
+
+	/**
+	 * \brief Name of the socket used to attach object to characters head.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName HeadSocketName = "head";
 	
 private:
 

@@ -14,6 +14,8 @@
 #include "ExplosiveDamageType.h"
 #include "BulletDamageType.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
 
 // Sets default values
 ANexusCharacter::ANexusCharacter()
@@ -29,6 +31,9 @@ ANexusCharacter::ANexusCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
+	CharacterCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("CharacterCaptureComponent"));
+	CharacterCaptureComponent->SetupAttachment(GetMesh(), HeadSocketName);
+	
 	// Initialise the health component
 	CharacterHealthComponent = CreateDefaultSubobject<UNexusHealthComponent>(TEXT("HealthComponent"));
 	
