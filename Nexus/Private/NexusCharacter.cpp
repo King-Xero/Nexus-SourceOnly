@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "ExplosiveDamageType.h"
+#include "BulletDamageType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -333,6 +334,13 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 			CurrentWeapon->SetLifeSpan(DeathLifeSpan);
 		}		
 	}
+	else if (!bDead)
+	{
+		if (DamageType->IsA(UBulletDamageType::StaticClass()))
+		{
+			PlayHitAnimation();
+		}
+	}
 }
 
 void ANexusCharacter::ServerPlayAnimationMontage_Implementation(UAnimMontage* AnimMontage, float PlaybackRate)
@@ -388,6 +396,28 @@ void ANexusCharacter::PlayDeathAnimation() const
 	{
 		GetMesh()->PlayAnimation(DeathAnimation, false);
 	}	
+}
+
+void ANexusCharacter::PlayHitAnimation()
+{
+	// Play a random death animation from the available animations.
+	const int RandomIndex = FMath::RandRange(0, HitReactionAnimationMontages.Num() - 1);
+
+	UAnimMontage* HitAnimation = HitReactionAnimationMontages[RandomIndex];
+
+	if (HitAnimation)
+	{
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the animation via the server authority.
+			ServerPlayAnimationMontage(HitAnimation);
+		}
+		else
+		{
+			// Play the animation.
+			MulticastPlayAnimationMontage(HitAnimation);
+		}
+	}
 }
 
 void ANexusCharacter::SpawnAndAttachStartingWeapons()

@@ -172,7 +172,7 @@ protected:
 	 * \brief Execute the animation montage on the server and all clients.
 	 */
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate);
+	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate = 1.0f);
 
 	/**
 	 * \brief Third person camera component
@@ -253,6 +253,12 @@ protected:
 	TArray<UAnimSequence*> DeathAnimations;
 
 	/**
+	 * \brief Animations played when the character is hit.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	TArray<UAnimMontage*> HitReactionAnimationMontages;
+
+	/**
 	 * \brief Animation montage used to swap weapon. (Should call SwapWeapon() via anim notify)
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
@@ -298,6 +304,12 @@ private:
 	 * \brief Play random death animation from available animations.
 	 */
 	void PlayDeathAnimation() const;
+
+	/**
+	 * \brief Play random hit animation from available animations.
+	 */
+	void PlayHitAnimation();
+	
 	/**
 	 * \brief Spawn the weapons this character starts with and attach them to the character mesh.
 	 */
