@@ -66,6 +66,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool bAimingDownSights;
 
+	/**
+	 * \brief The pitch rotation angle of the character's aim.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	float AimPitch;
+
+	/**
+	 * \brief The yaw rotation angle of the character's aim.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	float AimYaw;
+
 private:
 	
 	/**

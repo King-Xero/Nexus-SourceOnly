@@ -48,6 +48,18 @@ public:
 	bool IsAimingDownSights() const;
 
 	/**
+	 * \brief Return the pitch rotation angle of the character's aim.
+	 * \return Pitch rotation angle.
+	 */
+	float GetAimPitch() const;
+
+	/**
+	 * \brief Return the yaw rotation angle of the character's aim.
+	 * \return Yaw rotation angle.
+	 */
+	float GetAimYaw() const;
+
+	/**
 	 * \brief Make the character start firing the currently equipped weapon.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Player")
@@ -304,6 +316,12 @@ private:
 	void SetAimDownSight(float DeltaTime);
 
 	/**
+	 * \brief Set the aim angle values used for aim anim offset.
+	 * \param DeltaTime Time since last update.
+	 */
+	void SetAimAngles(float DeltaTime);
+
+	/**
 	 * \brief Spawn sound effect for character crouching.
 	 */
 	void PlayCrouchSFX() const;
@@ -359,6 +377,18 @@ private:
 	 */
 	UPROPERTY(Replicated)
 	bool bDead;
+
+	/**
+	 * \brief The pitch rotation angle of the character's aim.
+	 */
+	UPROPERTY(Replicated)
+	float AimPitchAngle;
+	
+	/**
+	 * \brief The yaw rotation angle of the character's aim.
+	 */
+	UPROPERTY(Replicated)
+	float AimYawAngle;
 
 	/**
 	 * \brief Default maximum walk speed, cached on begin play.

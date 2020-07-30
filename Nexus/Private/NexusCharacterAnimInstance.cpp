@@ -40,6 +40,8 @@ void UNexusCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			Direction = CalculateDirection(cPlayerCharacter->GetVelocity(), cPlayerCharacter->GetActorRotation());
 			bDead = cPlayerCharacter->IsDead();
 			bAimingDownSights = cPlayerCharacter->IsAimingDownSights();
+			AimPitch = cPlayerCharacter->GetAimPitch();
+			AimYaw = cPlayerCharacter->GetAimYaw();
 		}
 	}
 }

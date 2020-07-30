@@ -54,6 +54,8 @@ void ANexusCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SetAimDownSight(DeltaTime);
+
+	SetAimAngles(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -102,6 +104,16 @@ bool ANexusCharacter::IsDead() const
 bool ANexusCharacter::IsAimingDownSights() const
 {
 	return bAimDownSight;
+}
+
+float ANexusCharacter::GetAimPitch() const
+{
+	return AimPitchAngle;
+}
+
+float ANexusCharacter::GetAimYaw() const
+{
+	return AimYawAngle;
 }
 
 void ANexusCharacter::StartShooting()
@@ -372,6 +384,23 @@ void ANexusCharacter::SetAimDownSight(float DeltaTime)
 	const float InterpolationFOV = FMath::FInterpTo(CameraComponent->FieldOfView, TargetFOV, DeltaTime, ADSInterpolationSpeed);
 
 	CameraComponent->SetFieldOfView(InterpolationFOV);
+}
+
+void ANexusCharacter::SetAimAngles(float DeltaTime)
+{
+	// Calculate aim angles to drive aim animation offsets.
+	
+	const FRotator ControlRotation = GetControlRotation();
+	const FRotator ActorRotation = GetActorRotation();
+
+	const FRotator DeltaRotation = ControlRotation - ActorRotation;
+
+	const FRotator CurrentAimRotation(AimPitchAngle, AimYawAngle, 0);
+
+	const FRotator NewAimRotation = FMath::RInterpTo(CurrentAimRotation, DeltaRotation, DeltaTime, 15);
+
+	AimPitchAngle = FMath::ClampAngle(NewAimRotation.Pitch, -90, 90);
+	AimYawAngle = FMath::ClampAngle(NewAimRotation.Yaw, -90, 90);
 }
 
 void ANexusCharacter::PlayCrouchSFX() const
