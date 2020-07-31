@@ -110,6 +110,12 @@ public:
 	 * \return Amount of ammo.
 	 */
 	int32 GetAmmoInReserve() const;
+	
+	/**
+	 * \brief Return the maximum ammo this weapon can carry.
+	 * \return Max ammo capacity.
+	 */
+	int32 GetMaxAmmoCapacity() const;
 
 	/**
 	 * \brief Return the crosshair texture to be used when firing from the hip.
@@ -140,6 +146,11 @@ public:
 	 * \param NewWeaponState
 	 */
 	void SetWeaponState(EWeaponState NewWeaponState);
+
+	/**
+	 * \brief Restore weapon ammo.
+	 */
+	virtual void RestoreAmmo(int32 AmmoAmount);
 
 	/**
 	 * \brief Event used to broadcast ammo updates.
@@ -192,6 +203,12 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerReload();
 
+	/**
+	 * \brief Restore weapon ammo on the server.
+	 */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRestoreAmmo(int32 AmmoAmount);
+	
 	/**
 	 * \brief Call the server to play an animation montage.
 	 */

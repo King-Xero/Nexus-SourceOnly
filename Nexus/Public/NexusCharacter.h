@@ -101,6 +101,12 @@ public:
 	void PrepareWeaponAfterSwap() const;
 
 	/**
+	 * \brief Replenish ammo for all held weapons.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void FillAmmo();
+
+	/**
 	 * \brief Event used to broadcast ammo updates.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Events")

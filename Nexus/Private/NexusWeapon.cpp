@@ -121,6 +121,11 @@ int32 ANexusWeapon::GetAmmoInReserve() const
 	return CurrentTotalAmmo - CurrentAmmoInClip;
 }
 
+int32 ANexusWeapon::GetMaxAmmoCapacity() const
+{
+	return MaxAmmo;
+}
+
 UTexture* ANexusWeapon::GetHipFireCrosshairTexture() const
 {
 	return HipFireCrosshairTexture;
@@ -144,6 +149,24 @@ bool ANexusWeapon::CanWeaponBeSwapped() const
 void ANexusWeapon::SetWeaponState(EWeaponState NewWeaponState)
 {
 	CurrentWeaponState = NewWeaponState;
+}
+
+void ANexusWeapon::RestoreAmmo(int32 AmmoAmount)
+{
+	// Restore should only be called via the server authority.
+	if (ROLE_Authority > GetLocalRole())
+	{
+		ServerReload();
+	}
+
+	// Give full ammo.
+	CurrentTotalAmmo = MaxAmmo;
+	
+	// Fill clip ammo.
+	CurrentAmmoInClip = MaxAmmoPerClip;
+
+	// Publish UI update.
+	OnAmmoUpdated.Broadcast(this, CurrentAmmoInClip, GetAmmoInReserve());
 }
 
 // Called when the game starts or when spawned
@@ -232,6 +255,16 @@ void ANexusWeapon::Reload()
 
 	FNexusLogging::Log(ELogLevel::INFO, "Weapon has finished reloading");
 	SetWeaponState(EWeaponState::Idle);
+}
+
+void ANexusWeapon::ServerRestoreAmmo_Implementation(int32 AmmoAmount)
+{
+	RestoreAmmo(AmmoAmount);
+}
+
+bool ANexusWeapon::ServerRestoreAmmo_Validate(int32 AmmoAmount)
+{
+	return true;
 }
 
 void ANexusWeapon::ServerReload_Implementation()

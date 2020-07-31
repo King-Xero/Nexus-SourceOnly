@@ -222,6 +222,19 @@ void ANexusCharacter::PrepareWeaponAfterSwap() const
 	}
 }
 
+void ANexusCharacter::FillAmmo()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->RestoreAmmo(CurrentWeapon->GetMaxAmmoCapacity());
+	}
+
+	if (OffHandWeapon)
+	{
+		OffHandWeapon->RestoreAmmo(OffHandWeapon->GetMaxAmmoCapacity());
+	}
+}
+
 void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
