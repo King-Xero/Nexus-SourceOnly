@@ -168,6 +168,12 @@ protected:
 	 * \return Can fire - true, Cannot fire - false.
 	 */
 	bool CanFireWeapon() const;
+
+	/**
+	 * \brief Check if the weapon has ammo in the clip.
+	 * \return Has ammo - true, No ammo - false.
+	 */
+	bool HasAmmoInClip() const;
 	
 	/**
 	 * \brief Shoot the weapon.
@@ -220,6 +226,18 @@ protected:
 	 */
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate);
+
+	/**
+	 * \brief Call the server to play a sound effect.
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerPlaySFX(USoundBase* SoundEffect);
+
+	/**
+	 * \brief Play the sound effect on the server and all clients.
+	 */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlaySFX(USoundBase* SoundEffect);
 	
 	/**
 	 * \brief The visible mesh of the weapon.
@@ -372,6 +390,12 @@ protected:
 	USoundBase* FiredSFX;
 
 	/**
+	 * \brief Sound effect spawned at the weapons's location when it is fired with no ammo in the clip.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* DryFiredSFX;
+
+	/**
 	 * \brief Crosshair texture used when firing from the hip.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
@@ -443,7 +467,12 @@ protected:
 	/**
 	 * \brief Spawn sound effect for weapon fired.
 	 */
-	void PlayFiredSFX() const;
+	void PlayFiredSFX();
+
+	/**
+	 * \brief Spawn sound effect for weapon fired with no ammo.
+	 */
+	void PlayDryFiredSFX();
 
 	/**
 	 * \brief Get the damage multiplier for the surface type that was hit.

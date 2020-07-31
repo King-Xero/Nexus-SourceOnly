@@ -184,15 +184,18 @@ void ANexusWeapon::BeginPlay()
 
 bool ANexusWeapon::CanFireWeapon() const
 {
-	const bool bAmmoInClip = 0 < CurrentAmmoInClip;
-
 	// Check if the weapon has an owner, and that owner is alive.
 	const bool bOwnerAlive = OwningCharacter ? !OwningCharacter->IsDead() : false;
 
 	// Check that the weapon state will allow firing.
 	const bool bFiringAllowed = EWeaponState::Firing == CurrentWeaponState || EWeaponState::Idle == CurrentWeaponState;
 	
-	return bAmmoInClip && bFiringAllowed && bOwnerAlive;
+	return bFiringAllowed && bOwnerAlive;
+}
+
+bool ANexusWeapon::HasAmmoInClip() const
+{
+	return 0 < CurrentAmmoInClip;
 }
 
 void ANexusWeapon::ServerFire_Implementation()
@@ -293,6 +296,16 @@ void ANexusWeapon::MulticastPlayAnimationMontage_Implementation(UAnimMontage* An
 	OwningCharacter->PlayAnimMontage(AnimMontage, PlaybackRate);
 }
 
+void ANexusWeapon::ServerPlaySFX_Implementation(USoundBase* SoundEffect)
+{
+	MulticastPlaySFX(SoundEffect);
+}
+
+void ANexusWeapon::MulticastPlaySFX_Implementation(USoundBase* SoundEffect)
+{
+	UGameplayStatics::SpawnSoundAttached(SoundEffect, MeshComponent);
+}
+
 void ANexusWeapon::PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target) const
 {
 	// Spawn particle effect for weapon impact.
@@ -339,9 +352,6 @@ void ANexusWeapon::PlayWeaponFiredEffects(FVector BulletTracerTarget) const
 
 	// Shake the camera.
 	PlayCameraShake();
-
-	// Play the fired sound effect.
-	PlayFiredSFX();
 }
 
 void ANexusWeapon::PlayMuzzleEffect() const
@@ -385,11 +395,37 @@ void ANexusWeapon::PlayCameraShake() const
 	}	
 }
 
-void ANexusWeapon::PlayFiredSFX() const
+void ANexusWeapon::PlayFiredSFX()
 {
 	if (FiredSFX)
 	{
-		UGameplayStatics::SpawnSoundAtLocation(this, FiredSFX, GetActorLocation());
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the sfx via the server authority.
+			ServerPlaySFX(FiredSFX);
+		}
+		else
+		{
+			// Play the sfx.
+			MulticastPlaySFX(FiredSFX);
+		}
+	}
+}
+
+void ANexusWeapon::PlayDryFiredSFX()
+{
+	if (DryFiredSFX)
+	{
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the sfx via the server authority.
+			ServerPlaySFX(DryFiredSFX);
+		}
+		else
+		{
+			// Play the sfx.
+			MulticastPlaySFX(DryFiredSFX);
+		}
 	}
 }
 
