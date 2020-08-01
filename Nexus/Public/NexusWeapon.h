@@ -190,7 +190,7 @@ protected:
 	 * \brief Replicate weapon hit effects.
 	 */
 	UFUNCTION()
-	void OnRep_HitScanInfo() const;
+	void OnRep_HitScanInfo();
 
 	/**
 	 * \brief Check if the weapon can be reloaded.
@@ -228,16 +228,28 @@ protected:
 	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate);
 
 	/**
-	 * \brief Call the server to play a sound effect.
+	 * \brief Call the server to play a sound effect attached to the weapon.
 	 */
 	UFUNCTION(Server, Reliable)
 	void ServerPlaySFX(USoundBase* SoundEffect);
 
 	/**
-	 * \brief Play the sound effect on the server and all clients.
+	 * \brief Play the attached sound effect on the server and all clients.
 	 */
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlaySFX(USoundBase* SoundEffect);
+
+	/**
+	 * \brief Call the server to play a sound effect at the given location.
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerPlaySFXAtLocation(USoundBase* SoundEffect, FVector Location);
+
+	/**
+	 * \brief Play the sound effect on the server and all clients.
+	 */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlaySFXAtLocation(USoundBase* SoundEffect, FVector Location);
 	
 	/**
 	 * \brief The visible mesh of the weapon.
@@ -396,6 +408,24 @@ protected:
 	USoundBase* DryFiredSFX;
 
 	/**
+	 * \brief Sound effect spawned at the hit location when the weapon shot hits a characters head.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* HeadshotImpactSFX;
+
+	/**
+	 * \brief Sound effect spawned at the hit location when the weapon shot hits a characters body.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* BodyImpactSFX;
+
+	/**
+	 * \brief Sound effect spawned at the hit location when the weapon shot hits a characters limb.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* LimbImpactSFX;
+
+	/**
 	 * \brief Crosshair texture used when firing from the hip.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
@@ -433,14 +463,14 @@ protected:
 	 * \param SurfaceType The type of surface the weapon hit.
 	 * \param Target The location of the impact.
 	 */
-	void PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target) const;
+	void PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target);
 
 	/**
 	 * \brief Spawn particle effect for weapon impact.
 	 * \param SurfaceType The type of surface that was hit.
 	 * \param Target The location of the impact
 	 */
-	void PlayImpactEffect(EPhysicalSurface SurfaceType, FVector Target) const;
+	void PlayImpactEffect(EPhysicalSurface SurfaceType, FVector Target);
 	
 	/**
 	 * \brief Play all effects for when the weapon is fired.

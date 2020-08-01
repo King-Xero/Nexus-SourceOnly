@@ -209,7 +209,7 @@ bool ANexusWeapon::ServerFire_Validate()
 	return true;
 }
 
-void ANexusWeapon::OnRep_HitScanInfo() const
+void ANexusWeapon::OnRep_HitScanInfo()
 {
 	// This method is called when HitScanInfo is replicated.
 
@@ -306,23 +306,42 @@ void ANexusWeapon::MulticastPlaySFX_Implementation(USoundBase* SoundEffect)
 	UGameplayStatics::SpawnSoundAttached(SoundEffect, MeshComponent);
 }
 
-void ANexusWeapon::PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target) const
+void ANexusWeapon::ServerPlaySFXAtLocation_Implementation(USoundBase* SoundEffect, FVector Location)
+{
+	MulticastPlaySFXAtLocation(SoundEffect, Location);
+}
+
+void ANexusWeapon::MulticastPlaySFXAtLocation_Implementation(USoundBase* SoundEffect, FVector Location)
+{
+	UGameplayStatics::SpawnSoundAtLocation(this, SoundEffect, Location);
+}
+
+void ANexusWeapon::PlayWeaponImpactEffects(EPhysicalSurface SurfaceType, FVector Target)
 {
 	// Spawn particle effect for weapon impact.
 	PlayImpactEffect(SurfaceType, Target);
 }
 
-void ANexusWeapon::PlayImpactEffect(EPhysicalSurface SurfaceType, FVector Target) const
+void ANexusWeapon::PlayImpactEffect(EPhysicalSurface SurfaceType, FVector Target)
 {
-	// Set the impact vfx to be played depending on the surface type that is hit.
+	// Set the impact vfx/sfx to be played depending on the surface type that is hit.
 	UParticleSystem* SurfaceImpactVFX = nullptr;
+
+	USoundBase* SurfaceImpactSFX = nullptr;
 
 	switch (SurfaceType)
 	{
 		case SURFACE_CHARACTER_HEAD:
+			SurfaceImpactVFX = CharacterImpactVFX;
+			SurfaceImpactSFX = HeadshotImpactSFX;
+			break;
 		case SURFACE_CHARACTER_BODY:
+			SurfaceImpactVFX = CharacterImpactVFX;
+			SurfaceImpactSFX = BodyImpactSFX;
+			break;
 		case SURFACE_CHARACTER_LIMBS:
 			SurfaceImpactVFX = CharacterImpactVFX;
+			SurfaceImpactSFX = LimbImpactSFX;
 			break;
 		default:
 			SurfaceImpactVFX = DefaultImpactVFX;
@@ -340,6 +359,21 @@ void ANexusWeapon::PlayImpactEffect(EPhysicalSurface SurfaceType, FVector Target
 		
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SurfaceImpactVFX, Target, ShotDirection.Rotation());
 	}
+	
+	// Spawn sound effect for impact.
+	if (SurfaceImpactSFX)
+	{
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the sfx via the server authority.
+			ServerPlaySFXAtLocation(SurfaceImpactSFX, Target);
+		}
+		else
+		{
+			// Play the sfx.
+			MulticastPlaySFXAtLocation(SurfaceImpactSFX, Target);
+		}
+	}	
 }
 
 void ANexusWeapon::PlayWeaponFiredEffects(FVector BulletTracerTarget) const
