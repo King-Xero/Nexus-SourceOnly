@@ -36,6 +36,11 @@ public:
 	virtual FVector GetPawnViewLocation() const override;
 
 	/**
+	 * \brief Make the character jump on the next update, or stand from crouching.
+	 */
+	virtual void Jump() override;
+
+	/**
 	 * \brief Check if the character is dead.
 	 * \return true - dead, false - alive.
 	 */
@@ -147,6 +152,12 @@ protected:
 	 */
 	void MoveRight(float fAxisValue);
 
+	/**
+	 * \brief Make the character start/stop crouching.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void ToggleCrouch();
+	
 	/**
 	 * \brief Make the character crouch from standing.
 	 */

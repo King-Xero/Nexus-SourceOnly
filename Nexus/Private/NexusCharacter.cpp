@@ -69,8 +69,7 @@ void ANexusCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAxis(LookUpBindingName, this, &ANexusCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis(TurnBindingName, this, &ANexusCharacter::AddControllerYawInput);
 
-	PlayerInputComponent->BindAction(CrouchBindingName, IE_Pressed, this, &ANexusCharacter::StartCrouch);
-	PlayerInputComponent->BindAction(CrouchBindingName, IE_Released, this, &ANexusCharacter::EndCrouch);
+	PlayerInputComponent->BindAction(CrouchBindingName, IE_Pressed, this, &ANexusCharacter::ToggleCrouch);
 
 	PlayerInputComponent->BindAction(JumpBindingName, IE_Pressed, this, &ANexusCharacter::Jump);
 
@@ -94,6 +93,20 @@ FVector ANexusCharacter::GetPawnViewLocation() const
 	}
 
 	return Super::GetPawnViewLocation();
+}
+
+void ANexusCharacter::Jump()
+{
+	if (CanCrouch())
+	{
+		// If the character can crouch, then it is not crouched, meaning it can (and should) jump.
+		Super::Jump();
+	}
+	else
+	{
+		// If the character cannot crouch, it is crouched, meaning it should stand up.
+		EndCrouch();
+	}
 }
 
 bool ANexusCharacter::IsDead() const
@@ -281,13 +294,29 @@ void ANexusCharacter::MoveRight(float fAxisValue)
 	AddMovementInput(GetActorRightVector(), fAxisValue);
 }
 
+void ANexusCharacter::ToggleCrouch()
+{
+	if (CanCrouch())
+	{
+		StartCrouch();
+	}
+	else
+	{
+		EndCrouch();
+	}
+}
+
 /**
  * \brief Make the character crouch from standing
  */
 void ANexusCharacter::StartCrouch()
 {
-	PlayCrouchSFX();
-	Crouch();
+	// If the player can't jump (is in the air) then they shouldn't be able to crouch.
+	if(CanJump())
+	{
+		PlayCrouchSFX();
+		Crouch();
+	}	
 }
 
 /**
