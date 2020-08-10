@@ -132,7 +132,7 @@ void AExplodingBarrel::PlayExplosionVFX() const
 {
 	if (ExplosionVFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation(), MeshComponent->GetComponentRotation());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation(), MeshComponent->GetComponentRotation(), FVector(2), true, EPSCPoolMethod::AutoRelease);
 	}
 }
 
