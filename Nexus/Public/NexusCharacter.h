@@ -44,6 +44,7 @@ public:
 	 * \brief Check if the character is dead.
 	 * \return true - dead, false - alive.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	bool IsDead() const;
 
 	/**
