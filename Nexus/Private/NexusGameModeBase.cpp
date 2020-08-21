@@ -6,6 +6,7 @@
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "NexusGameState.h"
 #include "NexusPlayerState.h"
+#include "Kismet/GameplayStatics.h"
 
 ANexusGameModeBase::ANexusGameModeBase()
 {
@@ -183,8 +184,7 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 	CheckEnemiesAlive();
 	
 	APawn* KilledPawn = Cast<APawn>(KilledActor);
-
-	
+		
 	if (KilledPawn)
 	{
 		if (KilledPawn->IsPlayerControlled())
@@ -218,6 +218,15 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 
 						// ToDo Add an interface to pawns that has the amounts of points that they are worth.
 					}
+
+					// "Slow time"
+					if (APlayerController* PlayerInstigatingController = Cast<APlayerController>(InstigatingController))
+					{
+						UGameplayStatics::SetGlobalTimeDilation(GetWorld(), SlowMoTimeDilation);
+						PlayerInstigatingController->CustomTimeDilation = 1 / UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+						// Start timer to stop effect.
+						GetWorldTimerManager().SetTimer(TimerHandle_SlowMotion, this, &ANexusGameModeBase::EndSlowMotionEffect, SlowMoDuration);
+					}
 				}
 			}
 		}		
@@ -233,4 +242,9 @@ void ANexusGameModeBase::SetWaveState(EWaveState NewWaveState)
 		// Set the wave state in the game state, so that it is replicated to networked clients.
 		MatchGameState->SetWaveState(NewWaveState);
 	}
+}
+
+void ANexusGameModeBase::EndSlowMotionEffect()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 }

@@ -106,6 +106,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
 	float PlayerCheckRate = 1.0f;
 
+	/**
+	 * \brief Value used to set time dilation when an enemy is killed.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
+	float SlowMoTimeDilation = 0.5f;
+
+	/**
+	 * \brief The duration (in seconds) of the slow mo effect when an enemy is killed.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
+	float SlowMoDuration = 0.5f;
+
 private:
 
 	/**
@@ -128,6 +140,11 @@ private:
 	 * @note The game mode game state is used to replicate game mode data across networked clients.
 	 */
 	void SetWaveState(EWaveState NewWaveState);
+
+	/**
+	 * \brief End the slow motion effect applied when an enemy is killed.
+	 */
+	void EndSlowMotionEffect();
 	
 	/**
 	 * \brief The current wave number.
@@ -153,4 +170,9 @@ private:
 	 * \brief Handle used to manage timer that delays the preparation of the next wave after a wave is completed.
 	 */
 	FTimerHandle TimerHandle_WaveComplete;
+	
+	/**
+	 * \brief Handle used to manage the timer that stop the slow motion effect.
+	 */
+	FTimerHandle TimerHandle_SlowMotion;
 };
