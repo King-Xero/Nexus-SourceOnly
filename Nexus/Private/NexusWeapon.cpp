@@ -463,6 +463,28 @@ void ANexusWeapon::PlayDryFiredSFX()
 	}
 }
 
+void ANexusWeapon::PlayFiredAnimation()
+{
+	// Play reload animation.
+	UAnimMontage* FireAnimMontage = OwningCharacter->IsAimingDownSights() ? ADSFireAnimMontage : HipFireAnimMontage;
+
+	if (FireAnimMontage)
+	{
+		const float FireMontagePlaybackRate = FireAnimMontage->GetPlayLength() / WeaponFireDelayTime;
+
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the animation via the server authority.
+			ServerPlayAnimationMontage(FireAnimMontage, FireMontagePlaybackRate);
+		}
+		else
+		{
+			// Play the animation.
+			MulticastPlayAnimationMontage(FireAnimMontage, FireMontagePlaybackRate);
+		}
+	}
+}
+
 float ANexusWeapon::GetDamageMultiplier(EPhysicalSurface SurfaceType) const
 {
 	// Return the damage multiplier for the surface type that was hit.

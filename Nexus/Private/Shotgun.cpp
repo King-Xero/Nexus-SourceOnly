@@ -117,6 +117,8 @@ void AShotgun::Fire()
 
 			PlayFiredSFX();
 
+			PlayFiredAnimation();
+
 			// The server authority should replicate the hit scan information, so clients can replicate the weapon effects.
 			if (GetLocalRole() == ROLE_Authority)
 			{

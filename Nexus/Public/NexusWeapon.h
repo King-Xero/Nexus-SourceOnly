@@ -396,6 +396,18 @@ protected:
 	UAnimMontage* ADSReloadAnimMontage;
 
 	/**
+	 * \brief Firing animation montage for hip fire.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* HipFireAnimMontage;
+
+	/**
+	 * \brief Firing animation montage for ADS.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* ADSFireAnimMontage;
+
+	/**
 	 * \brief Sound effect spawned at the weapons's location when it is fired.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
@@ -503,6 +515,11 @@ protected:
 	 * \brief Spawn sound effect for weapon fired with no ammo.
 	 */
 	void PlayDryFiredSFX();
+
+	/**
+	 * \brief Play the fired animation on the owning player.
+	 */
+	void PlayFiredAnimation();
 
 	/**
 	 * \brief Get the damage multiplier for the surface type that was hit.
