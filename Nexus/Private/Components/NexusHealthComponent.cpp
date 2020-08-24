@@ -36,6 +36,24 @@ const float& UNexusHealthComponent::GetCurrentHealth() const
 	return CurrentHealth;
 }
 
+const float& UNexusHealthComponent::GetMaxArmour() const
+{
+	return MaxArmour;
+}
+
+const float& UNexusHealthComponent::GetCurrentArmour() const
+{
+	return CurrentArmour;
+}
+
+void UNexusHealthComponent::RestoreArmour(float ArmourAmount)
+{
+	CurrentArmour = FMath::Clamp(CurrentArmour + ArmourAmount, 0.0f, MaxArmour);
+
+	// Broadcast health update locally.
+	OnRep_CurrentHealthUpdated();
+}
+
 bool UNexusHealthComponent::IsFriendly(AActor* Actor1, AActor* Actor2)
 {
 	if (!Actor1 || !Actor2)
@@ -100,8 +118,21 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 
 			if (0.0f < DamageAmount)
 			{
-				// If DamageAmount is positive, health is depleted. 
-				FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Health depleted: {0}"), LogArgs));
+				// If DamageAmount is positive, damage was received. 
+				FNexusLogging::Log(ELogLevel::DEBUG, FString::Format(TEXT("Damage received: {0}"), LogArgs));
+				
+				if (CurrentArmour >= DamageAmount)
+				{
+					// If current armour is greater than damage amount then armour can take the damage, leaving 0 damage to be applied to health.
+					CurrentArmour = FMath::Clamp(CurrentArmour - DamageAmount, 0.0f, MaxArmour);
+					DamageAmount = 0;
+				}
+				else
+				{
+					// If current armour is not greater than damage amount them the damage amount to be depleted is reduced by the amount armour.
+					DamageAmount = FMath::Clamp(DamageAmount - CurrentArmour, 0.0f, DamageAmount);
+					CurrentArmour = 0;
+				}
 			}
 			else
 			{
@@ -139,8 +170,8 @@ void UNexusHealthComponent::TakeDamage(AActor* DamagedActor, float DamageAmount,
 	}
 }
 
-void UNexusHealthComponent::OnRep_CurrentHealthUpdated() const
+void UNexusHealthComponent::OnRep_CurrentHealthUpdated()
 {
 	// Broadcast current health update to replicated clients.
-	OnCurrentHealthUpdated.Broadcast();
+	OnCurrentHealthUpdated.Broadcast(this);
 }

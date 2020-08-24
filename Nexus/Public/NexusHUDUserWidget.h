@@ -47,16 +47,11 @@ public:
 protected:
 
 	/**
-	 * \brief Respond to a change in health. Wired up to health components OnHealthChanged event. Uses the signature for FOnHealthChangedSignature.
+	 * \brief Respond to a change in health. Wired up to health components OnCurrentHealthUpdated event. Uses the signature for FCurrentHealthReplicatedUpdateEvent.
 	 * \param HealthComponent The health component the experienced a health change.
-	 * \param Health The amount of health the component now has.
-	 * \param HealthDelta The amount of health that changed.
-	 * \param DamageType The type of damage that was being inflicted.
-	 * \param InstigatedBy The controller that inflicted the health change. (specific player or ai)
-	 * \param DamageCauser The actor that inflicted the health change. (player, weapon, etc)
 	 */
 	UFUNCTION()
-	void HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	void HealthChanged(UNexusHealthComponent* HealthComponent);
 
 	/**
 	 * \brief Respond to a change in ammo. Wired up to a weapons OnAmmoUpdated event.
@@ -98,6 +93,13 @@ protected:
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void PublishHealthChanged(float CurrentHealthPercentage);
+
+	/**
+	 * \brief Hook to update armour UI elements.
+	 * \param CurrentArmourPercentage
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void PublishArmourChanged(float CurrentArmourPercentage);
 
 	/**
 	 * \brief Hook to update ammo UI elements.
@@ -165,6 +167,11 @@ protected:
 	float MaxHealth;
 
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	float CurrentArmour;
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	float MaxArmour;
+
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	int32 AmmoInClip;
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	int32 AmmoInReserve;
@@ -198,6 +205,13 @@ private:
 	 * \param NewMaxHealth 
 	 */
 	void SetHealthAndPublishChange(float NewCurrentHealth, float NewMaxHealth);
+
+	/**
+	 * \brief Set armour variables and publish UI update.
+	 * \param NewCurrentArmour
+	 * \param NewMaxArmour
+	 */
+	void SetArmourAndPublishChange(float NewCurrentArmour, float NewMaxArmour);
 
 	/**
 	 * \brief Set ammo variables and publish UI update.

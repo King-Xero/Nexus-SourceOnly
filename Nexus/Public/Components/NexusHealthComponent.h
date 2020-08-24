@@ -7,7 +7,7 @@
 #include "NexusHealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UNexusHealthComponent*, HealthComponent, float, Health, float, HealthDelta, const UDamageType*, DamageType, AController*, InstigatedBy, AActor*, DamageCauser);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCurrentHealthReplicatedUpdateEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCurrentHealthReplicatedUpdateEvent, UNexusHealthComponent*, HealthComponent);
 
 UCLASS( ClassGroup=(Nexus), meta=(BlueprintSpawnableComponent) )
 class NEXUS_API UNexusHealthComponent : public UActorComponent
@@ -31,6 +31,26 @@ public:
 	 */
 	UFUNCTION()
 	const float& GetCurrentHealth() const;
+
+	/**
+	 * \brief Get the max armour for the health component.
+	 * \return Value for max armour.
+	 */
+	UFUNCTION()
+	const float& GetMaxArmour() const;
+
+	/**
+	 * \brief Get the current armour for the health component.
+	 * \return Value for current armour.
+	 */
+	UFUNCTION()
+	const float& GetCurrentArmour() const;
+
+	/**
+	 * \brief Restore a given amount of armour.
+	 * \param ArmourAmount 
+	 */
+	void RestoreArmour(float ArmourAmount);
 
 	/**
 	 * \brief Check if actors are on the same team.
@@ -88,6 +108,18 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealthUpdated, BlueprintReadOnly, VisibleAnywhere, Category = "Health")
 	float CurrentHealth;
 
+	/**
+	 * \brief The maximum amount of health available.
+	 */
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
+	float MaxArmour = 200.0f;
+
+	/**
+	 * \brief The maximum amount of health available.
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealthUpdated, BlueprintReadOnly, Category = "Health")
+	float CurrentArmour;
+
 private:
 
 	/**
@@ -99,5 +131,5 @@ private:
 	 * \brief Replicate current health updates.
 	 */
 	UFUNCTION()
-	void OnRep_CurrentHealthUpdated() const;	
+	void OnRep_CurrentHealthUpdated();	
 };

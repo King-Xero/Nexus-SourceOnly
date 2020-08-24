@@ -33,6 +33,14 @@ ANexusCharacter::ANexusCharacter()
 
 	CharacterCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("CharacterCaptureComponent"));
 	CharacterCaptureComponent->SetupAttachment(GetMesh(), HeadSocketName);
+
+	ArmourMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmourMeshComponent"));
+	ArmourMeshComponent->SetupAttachment(GetMesh(), ArmourSocketName);
+	ArmourMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	BagMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BagMeshComponent"));
+	BagMeshComponent->SetupAttachment(GetMesh(), BagSocketName);
+	BagMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	// Initialise the health component
 	CharacterHealthComponent = CreateDefaultSubobject<UNexusHealthComponent>(TEXT("HealthComponent"));
@@ -248,6 +256,13 @@ void ANexusCharacter::FillAmmo()
 	}
 }
 
+void ANexusCharacter::GiveArmour()
+{
+	CharacterHealthComponent->RestoreArmour(CharacterHealthComponent->GetMaxArmour());
+
+	SetArmourVisibility();
+}
+
 void ANexusCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -274,6 +289,9 @@ void ANexusCharacter::BeginPlay()
 	
 	// Wire up health changed event.
 	CharacterHealthComponent->OnHealthChanged.AddDynamic(this, &ANexusCharacter::HealthChanged);
+
+	// Initialise the armour visibility.
+	SetArmourVisibility();
 }
 
 /**
@@ -351,6 +369,9 @@ void ANexusCharacter::EndADS()
 
 void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	// Update the armour visibility.
+	SetArmourVisibility();
+	
 	// If the character's health is 0 or less and not currently dead, the character should die.
 	if (0.0f >= Health && !bDead)
 	{
@@ -545,4 +566,9 @@ void ANexusCharacter::AttachWeaponToSocket(ANexusWeapon*& Weapon, const FName& S
 {
 	// Attach the weapon to the character's socket.
 	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+}
+
+void ANexusCharacter::SetArmourVisibility()
+{
+	ArmourMeshComponent->SetVisibility(0 < CharacterHealthComponent->GetCurrentArmour());
 }

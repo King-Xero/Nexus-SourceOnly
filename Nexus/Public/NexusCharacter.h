@@ -113,6 +113,12 @@ public:
 	void FillAmmo();
 
 	/**
+	 * \brief Replenish armour.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void GiveArmour();
+
+	/**
 	 * \brief Event used to broadcast ammo updates.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -230,6 +236,18 @@ protected:
 	UNexusHealthComponent* CharacterHealthComponent;
 
 	/**
+	 * \brief Visible mesh component for armour.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* ArmourMeshComponent;
+
+	/**
+	 * \brief Visible mesh component for a bag.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* BagMeshComponent;
+
+	/**
 	 * \brief The weapon the character is currently using.
 	 */
 	UPROPERTY(Replicated)
@@ -324,6 +342,18 @@ protected:
 	 */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName HeadSocketName = "head";
+
+	/**
+	 * \brief Name of the socket used to attach armour to the character.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName ArmourSocketName = "ArmourSocket";
+
+	/**
+	 * \brief Name of the socket used to attach a bag to the character.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName BagSocketName = "BagSocket";
 	
 private:
 
@@ -378,6 +408,11 @@ private:
 	 * \param SocketName 
 	 */
 	void AttachWeaponToSocket(ANexusWeapon*& Weapon, const FName& SocketName);
+
+	/**
+	 * \brief Set the current visibility of the characters armour.
+	 */
+	void SetArmourVisibility();
 	
 	/**
 	 * \brief Default FOV value for the camera, cached on begin play.

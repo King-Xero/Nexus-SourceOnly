@@ -10,8 +10,9 @@
 void UNexusHUDUserWidget::ConfigureHealthAndBindToComponent(UNexusHealthComponent* HealthComponent)
 {
 	SetHealthAndPublishChange(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
+	SetArmourAndPublishChange(HealthComponent->GetCurrentArmour(), HealthComponent->GetMaxArmour());
 	
-	HealthComponent->OnHealthChanged.AddDynamic(this, &UNexusHUDUserWidget::HealthChanged);
+	HealthComponent->OnCurrentHealthUpdated.AddDynamic(this, &UNexusHUDUserWidget::HealthChanged);
 }
 
 void UNexusHUDUserWidget::ConfigureAndBindWeapon(ANexusWeapon* Weapon)
@@ -53,9 +54,12 @@ void UNexusHUDUserWidget::BindToGameState(ANexusGameState* GameState)
 	GameState->OnWaveNumberUpdated.AddDynamic(this, &UNexusHUDUserWidget::WaveNumberChanged);
 }
 
-void UNexusHUDUserWidget::HealthChanged(UNexusHealthComponent* HealthComponent, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+void UNexusHUDUserWidget::HealthChanged(UNexusHealthComponent* HealthComponent)
 {
-	SetHealthAndPublishChange(Health, HealthComponent->GetMaxHealth());
+	// Update health.
+	SetHealthAndPublishChange(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
+	// Update armour.
+	SetArmourAndPublishChange(HealthComponent->GetCurrentArmour(), HealthComponent->GetMaxArmour());
 }
 
 void UNexusHUDUserWidget::AmmoChanged(ANexusWeapon* Weapon, int32 NewAmmoInClip, int32 NewAmmoInReserve)
@@ -88,6 +92,16 @@ void UNexusHUDUserWidget::SetHealthAndPublishChange(float NewCurrentHealth, floa
 	const float HealthPercentage = FMath::Clamp(CurrentHealth / MaxHealth, 0.0f, 1.0f);
 	
 	PublishHealthChanged(HealthPercentage);
+}
+
+void UNexusHUDUserWidget::SetArmourAndPublishChange(float NewCurrentArmour, float NewMaxArmour)
+{
+	CurrentArmour = NewCurrentArmour;
+	MaxArmour = NewMaxArmour;
+
+	const float ArmourPercentage = FMath::Clamp(CurrentArmour / MaxArmour, 0.0f, 1.0f);
+
+	PublishArmourChanged(ArmourPercentage);
 }
 
 void UNexusHUDUserWidget::SetAmmoAndPublishChange(int32 NewAmmoInClip, int32 NewAmmoInReserve)
