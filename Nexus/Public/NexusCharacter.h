@@ -287,7 +287,7 @@ protected:
 	 * \brief Animations played when the character dies.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
-	TArray<UAnimSequence*> DeathAnimations;
+	TArray<UAnimMontage*> DeathAnimations;
 
 	/**
 	 * \brief Animations played when the character is hit.
@@ -352,7 +352,7 @@ private:
 	/**
 	 * \brief Play random death animation from available animations.
 	 */
-	void PlayDeathAnimation() const;
+	void PlayDeathAnimation();
 
 	/**
 	 * \brief Play random hit animation from available animations.

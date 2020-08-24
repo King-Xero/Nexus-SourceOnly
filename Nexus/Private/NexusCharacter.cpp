@@ -461,16 +461,25 @@ void ANexusCharacter::PlayDeathSFX() const
 	}
 }
 
-void ANexusCharacter::PlayDeathAnimation() const
+void ANexusCharacter::PlayDeathAnimation()
 {
 	// Play a random death animation from the available animations.
 	const int RandomIndex = FMath::RandRange(0, DeathAnimations.Num() - 1);
 
-	UAnimSequence* DeathAnimation = DeathAnimations[RandomIndex];
+	UAnimMontage* DeathAnimation = DeathAnimations[RandomIndex];
 
 	if (DeathAnimation)
 	{
-		GetMesh()->PlayAnimation(DeathAnimation, false);
+		if (ROLE_Authority > GetLocalRole())
+		{
+			// Play the animation via the server authority.
+			ServerPlayAnimationMontage(DeathAnimation);
+		}
+		else
+		{
+			// Play the animation.
+			MulticastPlayAnimationMontage(DeathAnimation);
+		}
 	}	
 }
 
