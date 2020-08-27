@@ -6,6 +6,7 @@
 #include "NexusWeapon.h"
 #include "NexusPlayerCharacter.h"
 #include "NexusGameState.h"
+#include "NexusPlayerState.h"
 
 void UNexusHUDUserWidget::ConfigureHealthAndBindToComponent(UNexusHealthComponent* HealthComponent)
 {
@@ -54,6 +55,12 @@ void UNexusHUDUserWidget::BindToGameState(ANexusGameState* GameState)
 	GameState->OnWaveNumberUpdated.AddDynamic(this, &UNexusHUDUserWidget::WaveNumberChanged);
 }
 
+void UNexusHUDUserWidget::BindToPlayerState(ANexusPlayerState* PlayerState)
+{
+	SetScoreAndPublishChange(PlayerState->GetScore());
+	PlayerState->OnScoreUpdated.AddDynamic(this, &UNexusHUDUserWidget::ScoreChanged);
+}
+
 void UNexusHUDUserWidget::HealthChanged(UNexusHealthComponent* HealthComponent)
 {
 	// Update health.
@@ -79,9 +86,14 @@ void UNexusHUDUserWidget::WaveStateChanged(ANexusGameState* GameState, EWaveStat
 	SetWaveStateAndPublishChange(OldState, NewState);
 }
 
-void UNexusHUDUserWidget::WaveNumberChanged(ANexusGameState* GameState, uint8 WaveNumber)
+void UNexusHUDUserWidget::WaveNumberChanged(ANexusGameState* GameState, int WaveNumber)
 {
 	SetWaveNumberAndPublishChange(WaveNumber);
+}
+
+void UNexusHUDUserWidget::ScoreChanged(ANexusPlayerState* PlayerState, float NewScore)
+{
+	SetScoreAndPublishChange(NewScore);
 }
 
 void UNexusHUDUserWidget::SetHealthAndPublishChange(float NewCurrentHealth, float NewMaxHealth)
@@ -142,11 +154,18 @@ void UNexusHUDUserWidget::SetWaveStateAndPublishChange(EWaveState OldState, EWav
 	}	
 }
 
-void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(uint8 WaveNumber)
+void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(int WaveNumber)
 {
 	CurrentWaveNumber = WaveNumber;
 
 	PublishWaveNumberChanged(CurrentWaveNumber);
+}
+
+void UNexusHUDUserWidget::SetScoreAndPublishChange(float NewScore)
+{
+	CurrentScore = NewScore;
+
+	PublishScoreChanged(CurrentScore);
 }
 
 FString UNexusHUDUserWidget::GetWaveNotificationText(EWaveState OldState, EWaveState NewState)

@@ -5,6 +5,7 @@
 #include "NexusHUDUserWidget.h"
 #include "NexusGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "NexusPlayerState.h"
 
 void ANexusPlayerCharacter::SwapWeapon()
 {
@@ -40,6 +41,13 @@ void ANexusPlayerCharacter::BeginPlay()
 
 			// Bind to game state for wave updates.
 			CurrentHUDWidget->BindToGameState(GetWorld()->GetGameState<ANexusGameState>());
+
+			// Bind to player state for score updates.
+			ANexusPlayerState* PState = GetPlayerStateChecked<ANexusPlayerState>();
+			if(PState)
+			{
+				CurrentHUDWidget->BindToPlayerState(PState);
+			}			
 		}
 	}
 }

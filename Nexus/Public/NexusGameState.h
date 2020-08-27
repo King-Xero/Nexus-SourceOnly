@@ -39,7 +39,7 @@ enum class EWaveState : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnWaveStateUpdatedSignature, ANexusGameState*, GameState, EWaveState, OldState, EWaveState, NewState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWaveNumberUpdatedSignature, ANexusGameState*, GameState, uint8, WaveNumber);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWaveNumberUpdatedSignature, ANexusGameState*, GameState, int, WaveNumber);
 
 /**
  * 
@@ -60,7 +60,7 @@ public:
 	 * \brief Return the current wave number.
 	 * \return Current wave number.
 	 */
-	uint8 GetCurrentWaveNumber() const;
+	int GetCurrentWaveNumber() const;
 	
 	/**
 	 * \brief Called on the server and all network clients on game over.
@@ -103,11 +103,22 @@ protected:
 	void WaveStateChanged(EWaveState OldState, EWaveState NewState);
 
 	/**
+	 * \brief Save the score of the locally controlled player.
+	 */
+	void SavePlayerScore();
+
+	/**
 	 * \brief UI widget to display on game over.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentWaveNumber, BlueprintReadOnly, Category = "GameState")
-	uint8 CurrentWaveNumber;
+	int CurrentWaveNumber;
+
+private:
+
+	bool IsGameOver;
+	
+	const FString GameSaveSlotName = "NexusGameSave";
 };

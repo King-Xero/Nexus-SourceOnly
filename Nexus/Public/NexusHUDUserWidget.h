@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "NexusHUDUserWidget.generated.h"
 
+class ANexusPlayerState;
 enum class EWaveState : unsigned char;
 class ANexusGameState;
 class ANexusCharacter;
@@ -43,6 +44,12 @@ public:
 	 * \param GameState
 	 */
 	void BindToGameState(ANexusGameState* GameState);
+	
+	/**
+	 * \brief Bind to player state for score updates.
+	 * \param PlayerState 
+	 */
+	void BindToPlayerState(ANexusPlayerState* PlayerState);
 
 protected:
 
@@ -85,7 +92,15 @@ protected:
 	 * \param WaveNumber The wave number to be displayed in the UI.
 	 */
 	UFUNCTION()
-	void WaveNumberChanged(ANexusGameState* GameState, uint8 WaveNumber);
+	void WaveNumberChanged(ANexusGameState* GameState, int WaveNumber);
+
+	/**
+	 * \brief Respond to the players score changing. Wired up to playerstates OnScoreUpdated event.
+	 * \param PlayerState 
+	 * \param NewScore The score to be displayed in the UI.
+	 */
+	UFUNCTION()
+	void ScoreChanged(ANexusPlayerState* PlayerState, float NewScore);
 
 	/**
 	 * \brief Hook to update health UI elements.
@@ -125,10 +140,10 @@ protected:
 
 	/**
 	 * \brief Hook to update the wave number UI element.
-	 * \param CurrentWaveNumber 
+	 * \param WaveNumber 
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void PublishWaveNumberChanged(uint8 WaveNumber);
+	void PublishWaveNumberChanged(int WaveNumber);
 
 	/**
 	 * \brief Hook to display wave notification.
@@ -137,6 +152,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void PublishWaveStateNotification(const FString& NotificationText);
 
+	/**
+	 * \brief Hook to update the score UI element.
+	 * \param NewScore
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void PublishScoreChanged(float NewScore);
+	
 	/**
 	 * \brief Text to display before first wave.
 	 */
@@ -195,7 +217,10 @@ protected:
 	EWaveState NewWaveState;
 
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
-	uint8 CurrentWaveNumber;
+	int CurrentWaveNumber;
+
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	float CurrentScore;
 	
 private:
 
@@ -243,7 +268,13 @@ private:
 	 * \brief Set the wave number and publish UI update.
 	 * \param WaveNumber Wave number to be displayed in the UI.
 	 */
-	void SetWaveNumberAndPublishChange(uint8 WaveNumber);
+	void SetWaveNumberAndPublishChange(int WaveNumber);
+
+	/**
+	 * \brief Set the score and publish UI update.
+	 * \param NewScore Score to be displayed in the UI.
+	 */
+	void SetScoreAndPublishChange(float NewScore);
 
 	/**
 	 * \brief Use the wave states to return the correct text for the notification

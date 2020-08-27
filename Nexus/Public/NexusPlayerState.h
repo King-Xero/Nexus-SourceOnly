@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerState.h"
 #include "NexusPlayerState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerScoreUpdatedSignature, ANexusPlayerState*, PlayerState, float, NewScore);
+
 /**
  * 
  */
@@ -22,4 +24,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PlayerState")
 	void AddScore(float ScoreAmount);
+
+	/**
+	 * \brief Event used to broadcast ammo updates.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnPlayerScoreUpdatedSignature OnScoreUpdated;
 };

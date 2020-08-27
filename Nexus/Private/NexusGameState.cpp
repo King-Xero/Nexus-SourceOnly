@@ -3,6 +3,11 @@
 #include "NexusGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
+#include "EngineUtils.h"
+#include "NexusPlayerState.h"
+#include "Kismet/GameplayStatics.h"
+#include "NexusSaveGame.h"
+
 
 void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 {
@@ -28,7 +33,7 @@ void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 	}	
 }
 
-uint8 ANexusGameState::GetCurrentWaveNumber() const
+int ANexusGameState::GetCurrentWaveNumber() const
 {
 	return CurrentWaveNumber;
 }
@@ -49,6 +54,8 @@ void ANexusGameState::BeginPlay()
 	Super::BeginPlay();
 
 	CurrentWaveNumber = 0;
+
+	IsGameOver = false;
 }
 
 void ANexusGameState::OnRep_WaveState(EWaveState OldState)
@@ -63,10 +70,57 @@ void ANexusGameState::OnRep_CurrentWaveNumber()
 	OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
 }
 
+void ANexusGameState::SavePlayerScore()
+{
+	for (TActorIterator<APlayerController> PlayerIterator(GetWorld()); PlayerIterator; ++PlayerIterator)
+	{
+		// Dereference the player controller from the iterator.
+		APlayerController* PlayerToCheck = *PlayerIterator;
+		// Check if the player is valid.
+		if (PlayerToCheck && PlayerToCheck->IsLocalPlayerController())
+		{
+			ANexusPlayerState* PlayerState = PlayerToCheck->GetPlayerState<ANexusPlayerState>();
+			if (PlayerState)
+			{
+				const float FinalScore = PlayerState->GetScore();
+
+				UNexusSaveGame* SaveGame = Cast<UNexusSaveGame>(UGameplayStatics::LoadGameFromSlot(GameSaveSlotName, 0));
+				if (SaveGame)
+				{
+					FNexusPlayerScoreStruct ScoreToAdd(FName(FPlatformProcess::UserName()), FinalScore);
+
+					// Loop through all scores in the game save, insert the new score, and shuffle down existing lower scores.
+					for (int i = 0; i < SaveGame->HighScores.Num(); ++i)
+					{
+						if(SaveGame->HighScores[i].Score < FinalScore)
+						{
+							const FNexusPlayerScoreStruct TempScore = SaveGame->HighScores[i];
+
+							SaveGame->HighScores[i] = ScoreToAdd;
+
+							ScoreToAdd = TempScore;
+						}
+					}
+
+					UGameplayStatics::SaveGameToSlot(SaveGame, GameSaveSlotName, 0);
+				}
+			}
+		}
+	}
+}
+
 void ANexusGameState::MulticastOnGameOver_Implementation()
 {
-	// Create and show the game over widget.
-	UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
+	if (!IsGameOver)
+	{
+		// Save player score.
+		SavePlayerScore();
 
-	GameOverWidget->AddToViewport();
+		// Create and show the game over widget.
+		UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
+
+		GameOverWidget->AddToViewport();
+
+		IsGameOver = true;
+	}	
 }
