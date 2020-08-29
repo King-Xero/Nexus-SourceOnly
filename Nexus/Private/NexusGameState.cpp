@@ -11,23 +11,26 @@
 
 void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 {
-	if (ROLE_Authority == GetLocalRole())
+	if (CurrentWaveState != NewWaveState)
 	{
-		const EWaveState OldWaveState = CurrentWaveState;
-
-		// Setting the wave state will replicate to network clients.
-		CurrentWaveState = NewWaveState;
-
-		if (EWaveState::PreparingNextWave == CurrentWaveState)
+		if (ROLE_Authority == GetLocalRole())
 		{
-			++CurrentWaveNumber;
-			// Update the wave counter UI.
-			OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
-		}
+			const EWaveState OldWaveState = CurrentWaveState;
 
-		// Change the wave state locally on the server authority.
-		OnRep_WaveState(OldWaveState);
-	}	
+			// Setting the wave state will replicate to network clients.
+			CurrentWaveState = NewWaveState;
+
+			if (EWaveState::PreparingNextWave == CurrentWaveState)
+			{
+				++CurrentWaveNumber;
+				// Update the wave counter UI.
+				OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
+			}
+
+			// Change the wave state locally on the server authority.
+			OnRep_WaveState(OldWaveState);
+		}
+	}
 }
 
 int ANexusGameState::GetCurrentWaveNumber() const
