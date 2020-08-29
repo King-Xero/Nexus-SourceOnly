@@ -32,7 +32,7 @@ ANexusCharacter::ANexusCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	CharacterCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("CharacterCaptureComponent"));
-	CharacterCaptureComponent->SetupAttachment(GetMesh(), HeadSocketName);
+	CharacterCaptureComponent->SetupAttachment(GetMesh(), FaceCamSocketName);
 
 	ArmourMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArmourMeshComponent"));
 	ArmourMeshComponent->SetupAttachment(GetMesh(), ArmourSocketName);
@@ -41,6 +41,18 @@ ANexusCharacter::ANexusCharacter()
 	BagMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BagMeshComponent"));
 	BagMeshComponent->SetupAttachment(GetMesh(), BagSocketName);
 	BagMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	HairMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HairMeshComponent"));
+	HairMeshComponent->SetupAttachment(GetMesh(), HeadSocketName);
+	HairMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	BeardMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BeardMeshComponent"));
+	BeardMeshComponent->SetupAttachment(GetMesh(), HeadSocketName);
+	BeardMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	MaskMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MaskMeshComponent"));
+	MaskMeshComponent->SetupAttachment(GetMesh(), HeadSocketName);
+	MaskMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	// Initialise the health component
 	CharacterHealthComponent = CreateDefaultSubobject<UNexusHealthComponent>(TEXT("HealthComponent"));

@@ -248,6 +248,24 @@ protected:
 	UStaticMeshComponent* BagMeshComponent;
 
 	/**
+	 * \brief Visible mesh component for hair.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* HairMeshComponent;
+
+	/**
+	 * \brief Visible mesh component for a beard.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* BeardMeshComponent;
+
+	/**
+	 * \brief Visible mesh component for a mask.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* MaskMeshComponent;
+
+	/**
 	 * \brief The weapon the character is currently using.
 	 */
 	UPROPERTY(Replicated)
@@ -338,10 +356,16 @@ protected:
 	FName OffHandWeapon1SocketName = "Weapon1Socket";
 
 	/**
-	 * \brief Name of the socket used to attach object to characters head.
+	 * \brief Name of the socket used to attach facecam to character's head.
 	 */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	FName HeadSocketName = "head";
+	FName FaceCamSocketName = "head";
+
+	/**
+	 * \brief Name of the socket used to attach objects to character's head.
+	 */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName HeadSocketName = "HeadSocket";
 
 	/**
 	 * \brief Name of the socket used to attach armour to the character.
