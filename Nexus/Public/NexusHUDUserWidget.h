@@ -13,6 +13,7 @@ class ANexusCharacter;
 class ANexusPlayerCharacter;
 class ANexusWeapon;
 class UNexusHealthComponent;
+class USoundCue;
 
 UCLASS()
 class NEXUS_API UNexusHUDUserWidget : public UUserWidget
@@ -182,6 +183,30 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
 	FString WaveCompleteText;
+
+	/**
+	 * \brief Text to display before first wave.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	USoundCue* PrepareForFirstWaveAnnouncementSFX;
+	
+	/**
+	 * \brief Text to display between waves.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	USoundCue* PrepareForNextWaveAnnouncementSFX;
+
+	/**
+	 * \brief Text to display when a wave starts.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	USoundCue* WaveStartingAnnouncementSFX;
+
+	/**
+	 * \brief Text to display when a wave is completed.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD")
+	USoundCue* WaveCompleteAnnouncementSFX;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	float CurrentHealth;
@@ -283,6 +308,13 @@ private:
 	 * \return 
 	 */
 	FString GetWaveNotificationText(EWaveState OldState, EWaveState NewState);
+	
+	/**
+	 * \brief Get the announcement sfx to play for the new wave state.
+	 * \param NewState 
+	 * \return Announcement sfx.
+	 */
+	USoundCue* GetWaveAnnouncementSFX(EWaveState NewState);
 
 	/**
 	 * \brief Pointer to the currently equipped weapon.

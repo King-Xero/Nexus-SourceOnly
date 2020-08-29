@@ -7,6 +7,7 @@
 #include "NexusPlayerCharacter.h"
 #include "NexusGameState.h"
 #include "NexusPlayerState.h"
+#include "Sound/SoundCue.h"
 
 void UNexusHUDUserWidget::ConfigureHealthAndBindToComponent(UNexusHealthComponent* HealthComponent)
 {
@@ -151,7 +152,13 @@ void UNexusHUDUserWidget::SetWaveStateAndPublishChange(EWaveState OldState, EWav
 	if(!WaveNotificationText.IsEmpty())
 	{
 		PublishWaveStateNotification(WaveNotificationText);
-	}	
+	}
+	
+	USoundCue* WaveAnnouncementSFX = GetWaveAnnouncementSFX(NewState);
+	if (WaveAnnouncementSFX)
+	{
+		PlaySound(WaveAnnouncementSFX);
+	}
 }
 
 void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(int WaveNumber)
@@ -186,4 +193,23 @@ FString UNexusHUDUserWidget::GetWaveNotificationText(EWaveState OldState, EWaveS
 			return FString();
 	}
 	return FString();
+}
+
+USoundCue* UNexusHUDUserWidget::GetWaveAnnouncementSFX(EWaveState NewState)
+{
+	switch (NewState)
+	{
+		case EWaveState::PreparingNextWave:
+			return 1 >= CurrentWaveNumber ? PrepareForFirstWaveAnnouncementSFX : PrepareForNextWaveAnnouncementSFX;
+		case EWaveState::WaveInProgress:
+			return WaveStartingAnnouncementSFX;
+		case EWaveState::WaveComplete:
+			return WaveCompleteAnnouncementSFX;
+		case EWaveState::GameOver:
+		case EWaveState::WaitingToComplete:
+		case EWaveState::Unknown:
+		default:
+			// No sfx to play.
+			return nullptr;
+	}
 }

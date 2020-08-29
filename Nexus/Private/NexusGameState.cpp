@@ -18,9 +18,6 @@ void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 		// Setting the wave state will replicate to network clients.
 		CurrentWaveState = NewWaveState;
 
-		// Change the wave state locally on the server authority.
-		OnRep_WaveState(OldWaveState);
-
 		if (EWaveState::PreparingNextWave == CurrentWaveState)
 		{
 			++CurrentWaveNumber;
@@ -28,8 +25,8 @@ void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 			OnWaveNumberUpdated.Broadcast(this, CurrentWaveNumber);
 		}
 
-		// Display a wave notification.
-		OnWaveStateUpdated.Broadcast(this, OldWaveState, CurrentWaveState);
+		// Change the wave state locally on the server authority.
+		OnRep_WaveState(OldWaveState);
 	}	
 }
 
