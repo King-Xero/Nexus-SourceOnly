@@ -5,15 +5,26 @@
 #include "Perception/AIPerceptionComponent.h"
 
 ANexusAICharacter::ANexusAICharacter()
+	: ANexusCharacter()
 {
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
+}
+
+void ANexusAICharacter::StopShooting()
+{
+	Super::StopShooting();
+	
+	if (CurrentWeapon->GetAmmoInClip() <= 0)
+	{
+		StartReloading();
+	}
 }
 
 void ANexusAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Randomise character appearance.
+	// Randomize character appearance.
 
 	// Character mesh
 	const int RandomCharacterMeshIndex = FMath::RandRange(0, CharacterMeshes.Num() - 1);

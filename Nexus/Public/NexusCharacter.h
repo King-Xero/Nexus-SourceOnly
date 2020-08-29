@@ -75,7 +75,7 @@ public:
 	 * \brief Make the character stop firing the currently equipped weapon.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	void StopShooting();
+	virtual void StopShooting();
 
 	/**
 	 * \brief Make the character start reloading the currently equipped weapon.

@@ -12,9 +12,12 @@ UCLASS()
 class NEXUS_API ANexusAICharacter : public ANexusCharacter
 {
 	GENERATED_BODY()
-	
+
+public:
 	ANexusAICharacter();
 
+	virtual void StopShooting() override;
+	
 protected:
 
 	virtual void BeginPlay() override;
