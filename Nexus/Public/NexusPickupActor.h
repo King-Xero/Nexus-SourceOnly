@@ -51,6 +51,12 @@ protected:
 	UDecalComponent* DecalComponent;
 
 	/**
+	 * \brief SFX played when the power up is collected.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	USoundBase* PowerUpCollectedSFX;
+	
+	/**
 	 * \brief The type of power up that this pick up spawns.
 	 */
 	UPROPERTY(EditInstanceOnly, Category = "PickupActor")

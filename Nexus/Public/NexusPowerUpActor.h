@@ -86,6 +86,18 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	URotatingMovementComponent* RotatingComponent;
+
+	/**
+	 * \brief Used to play audio from the power.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAudioComponent* AudioComponent;
+
+	/**
+	 * \brief SFX played while the power up is idle.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "PowerUps")
+	USoundBase* PowerUpIdleSFX;
 	
 	/**
 	 * \brief Interval between power up ticks.

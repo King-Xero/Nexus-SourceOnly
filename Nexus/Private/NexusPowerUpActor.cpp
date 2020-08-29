@@ -5,6 +5,8 @@
 #include "Components/PointLightComponent.h"
 #include "GameFramework/RotatingMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ANexusPowerUpActor::ANexusPowerUpActor()
@@ -24,6 +26,9 @@ ANexusPowerUpActor::ANexusPowerUpActor()
 
 	RotatingComponent = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingComponent"));
 	
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent);
+	
 	TicksProcessed = 0;
 
 	// Needs to be set to replicate explosion across all clients.
@@ -32,6 +37,9 @@ ANexusPowerUpActor::ANexusPowerUpActor()
 
 void ANexusPowerUpActor::ActivatePowerUp(AActor* ActivatingActor)
 {
+	// Fade SFX to stop.
+	AudioComponent->FadeOut(3.0f, 0.0f);
+	
 	PowerUpActivatingActor = ActivatingActor;
 	
 	// Set a timer to apply the power up effect.
@@ -102,6 +110,9 @@ void ANexusPowerUpActor::BeginPlay()
 
 	// Set timer to make the power up "float".
 	GetWorldTimerManager().SetTimer(TimerHandle_Float, this, &ANexusPowerUpActor::Float, FloatInterval, true);
+
+	AudioComponent->SetSound(PowerUpIdleSFX);
+	AudioComponent->Play();
 }
 
 void ANexusPowerUpActor::PowerUpTick()

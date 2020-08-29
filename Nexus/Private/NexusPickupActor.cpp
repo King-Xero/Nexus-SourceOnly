@@ -5,6 +5,8 @@
 #include "Components/DecalComponent.h"
 #include "NexusPowerUpActor.h"
 #include "NexusCharacter.h"
+#include "NexusPlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ANexusPickupActor::ANexusPickupActor()
@@ -30,11 +32,13 @@ void ANexusPickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	// Only characters can collect the pick ups.
-	if (OtherActor->IsA<ANexusCharacter>() && ROLE_Authority == GetLocalRole() && SpawnedPowerUp)
+	// Only player characters can collect the pick ups.
+	if (OtherActor->IsA<ANexusPlayerCharacter>() && ROLE_Authority == GetLocalRole() && SpawnedPowerUp)
 	{
 		SpawnedPowerUp->ActivatePowerUp(OtherActor);
 		SpawnedPowerUp = nullptr;
+
+		UGameplayStatics::PlaySound2D(this, PowerUpCollectedSFX);
 
 		// Set timer to respawn the power up.
 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnPowerUp, this, &ANexusPickupActor::SpawnPowerUp, PickUpCoolDown);
