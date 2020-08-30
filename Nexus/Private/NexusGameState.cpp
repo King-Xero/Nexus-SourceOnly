@@ -7,7 +7,7 @@
 #include "NexusPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "NexusSaveGame.h"
-
+#include "NexusBackgroundMusicPlayer.h"
 
 void ANexusGameState::SetWaveState(EWaveState NewWaveState)
 {
@@ -38,6 +38,16 @@ int ANexusGameState::GetCurrentWaveNumber() const
 	return CurrentWaveNumber;
 }
 
+bool ANexusGameState::IsNewHighScore()
+{
+	return bNewHighScore;
+}
+
+ANexusBackgroundMusicPlayer* ANexusGameState::GetMusicPlayer()
+{
+	return GameMusicPlayer;
+}
+
 void ANexusGameState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -55,12 +65,22 @@ void ANexusGameState::BeginPlay()
 
 	CurrentWaveNumber = 0;
 
-	IsGameOver = false;
+	bGameOver = false;
+
+	bNewHighScore = false;
+
+	// Spawn music player
+	if (GameMusicPlayerClass)
+	{
+		GameMusicPlayer = Cast<ANexusBackgroundMusicPlayer>(GetWorld()->SpawnActor(GameMusicPlayerClass));
+	}
 }
 
 void ANexusGameState::OnRep_WaveState(EWaveState OldState)
 {
 	WaveStateChanged(OldState, CurrentWaveState);
+
+	SetMusicForWaveState(CurrentWaveState);
 
 	OnWaveStateUpdated.Broadcast(this, OldState, CurrentWaveState);
 }
@@ -94,6 +114,9 @@ void ANexusGameState::SavePlayerScore()
 					{
 						if(SaveGame->HighScores[i].Score < FinalScore)
 						{
+							// Set flag so that the new high score UI and SFX are activated.
+							bNewHighScore = true;
+							
 							const FNexusPlayerScoreStruct TempScore = SaveGame->HighScores[i];
 
 							SaveGame->HighScores[i] = ScoreToAdd;
@@ -109,9 +132,33 @@ void ANexusGameState::SavePlayerScore()
 	}
 }
 
+void ANexusGameState::SetMusicForWaveState(EWaveState WaveState) const
+{
+	if (GameMusicPlayer)
+	{
+		switch (WaveState)
+		{
+		case EWaveState::WaveInProgress:
+			GameMusicPlayer->PlayRandomTrackFromList();
+			break;	
+		case EWaveState::WaveComplete:
+			GameMusicPlayer->StopMusic();
+			break;
+		case EWaveState::GameOver:
+			GameMusicPlayer->StopMusic();
+			break;
+		case EWaveState::PreparingNextWave:
+		case EWaveState::WaitingToComplete:
+		case EWaveState::Unknown:
+		default:
+			break;
+		}
+	}
+}
+
 void ANexusGameState::MulticastOnGameOver_Implementation()
 {
-	if (!IsGameOver)
+	if (!bGameOver)
 	{
 		// Save player score.
 		SavePlayerScore();
@@ -121,6 +168,6 @@ void ANexusGameState::MulticastOnGameOver_Implementation()
 
 		GameOverWidget->AddToViewport();
 
-		IsGameOver = true;
+		bGameOver = true;
 	}	
 }

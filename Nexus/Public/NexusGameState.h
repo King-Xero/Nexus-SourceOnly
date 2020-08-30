@@ -6,6 +6,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "NexusGameState.generated.h"
 
+class ANexusBackgroundMusicPlayer;
+
 /**
  * \brief Used to track the current phase of the wave system.
  */
@@ -67,6 +69,20 @@ public:
 	 */
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastOnGameOver();
+
+	/**
+	 * \brief Check if a new high score has been achieved.
+	 * \return true - new high score, false - no new high score.
+	 */
+	UFUNCTION(BlueprintCallable)
+	bool IsNewHighScore();
+
+	/**
+	 * \brief Get the game music player.
+	 * \return Music player.
+	 */
+	UFUNCTION(BlueprintCallable)
+	ANexusBackgroundMusicPlayer* GetMusicPlayer();
 	
 	UPROPERTY(ReplicatedUsing=OnRep_WaveState, BlueprintReadOnly, Category = "GameState")
 	EWaveState CurrentWaveState;
@@ -110,15 +126,31 @@ protected:
 	/**
 	 * \brief UI widget to display on game over.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game State")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentWaveNumber, BlueprintReadOnly, Category = "GameState")
 	int CurrentWaveNumber;
 
+	/**
+	 * \brief Actor used to play music during the game.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game State")
+	TSubclassOf<ANexusBackgroundMusicPlayer> GameMusicPlayerClass;
+
 private:
 
-	bool IsGameOver;
+	/**
+	 * \brief Adjust the music for the given wave state.
+	 * \param WaveState 
+	 */
+	void SetMusicForWaveState(EWaveState WaveState) const;
+	
+	bool bGameOver;
+
+	bool bNewHighScore;
+
+	ANexusBackgroundMusicPlayer* GameMusicPlayer;
 	
 	const FString GameSaveSlotName = "NexusGameSave";
 };
