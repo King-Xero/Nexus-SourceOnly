@@ -89,6 +89,12 @@ protected:
 	float EnemySpawnRate = 1.0f;
 
 	/**
+	 * \brief The maximum number of enemies that can be on the map at once.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
+	int MaxEnemiesOnMap = 8;
+	
+	/**
 	 * \brief The duration of the delay before the next wave starts.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameMode")
@@ -155,6 +161,11 @@ private:
 	 * \brief The number of enemies to spawn in the current wave.
 	 */
 	int EnemiesToSpawn;
+
+	/**
+	 * \brief The number of enemies currently spawned on the map.
+	 */
+	int CurrentlySpawnedEnemies;
 	
 	/**
 	 * \brief Handle used to manage timer that spawns enemies.

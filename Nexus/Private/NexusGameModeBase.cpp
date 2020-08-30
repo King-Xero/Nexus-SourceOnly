@@ -36,6 +36,8 @@ void ANexusGameModeBase::BeginPlay()
 void ANexusGameModeBase::StartWave()
 {
 	++WaveCount;
+
+	CurrentlySpawnedEnemies = 0;
 	
 	// Number of enemies spawned increases with waves progressed.
 	EnemiesToSpawn = BaseEnemyCount * WaveCount;
@@ -136,8 +138,6 @@ void ANexusGameModeBase::GameOver()
 {
 	EndWave();
 
-	// ToDo finish the match, and present "game over" screen to players.
-
 	// The match has ended.
 	SetWaveState(EWaveState::GameOver);
 
@@ -168,12 +168,18 @@ void ANexusGameModeBase::RepsawnDeadPlayers()
 
 void ANexusGameModeBase::EnemySpawnerElapsed()
 {
-	// Spawn an enemy
-	SpawnNewEnemy();
-
-	if (0 >= --EnemiesToSpawn)
+	// Only spawn an enemy if less than the max allowed on the map.
+	if (CurrentlySpawnedEnemies <= MaxEnemiesOnMap)
 	{
-		EndWave();
+		// Spawn an enemy
+		SpawnNewEnemy();
+
+		++CurrentlySpawnedEnemies;
+
+		if (0 >= --EnemiesToSpawn)
+		{
+			EndWave();
+		}
 	}
 }
 
@@ -195,6 +201,9 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 		}
 		else
 		{
+			// Reduce current enemies spawned count.
+			--CurrentlySpawnedEnemies;
+			
 			// An enemy was killed, so we should check if there are any still alive.
 			CheckEnemiesAlive();
 			
