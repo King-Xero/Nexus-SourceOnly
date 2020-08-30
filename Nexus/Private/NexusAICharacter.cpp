@@ -8,6 +8,11 @@ ANexusAICharacter::ANexusAICharacter()
 	: ANexusCharacter()
 {
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
+
+	EasterEggMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EasterEggMeshComponent"));
+	EasterEggMeshComponent->SetupAttachment(GetMesh(), HeadSocketName);
+	EasterEggMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	EasterEggMeshComponent->SetVisibility(false);
 }
 
 void ANexusAICharacter::StopShooting()

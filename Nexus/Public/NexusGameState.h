@@ -85,6 +85,19 @@ public:
 	bool IsGameOver();
 
 	/**
+	 * \brief Check if easter egg is active.
+	 * \return bEasterEggActive
+	 */
+	UFUNCTION(BlueprintCallable)
+	bool IsEasterEggActive();
+
+	/**
+	 * \brief Activate the easter egg.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void ActivateEasterEgg();
+
+	/**
 	 * \brief Get the game music player.
 	 * \return Music player.
 	 */
@@ -152,6 +165,8 @@ private:
 	 * \param WaveState 
 	 */
 	void SetMusicForWaveState(EWaveState WaveState) const;
+	
+	bool bEasterEggActive;
 	
 	bool bGameOver;
 

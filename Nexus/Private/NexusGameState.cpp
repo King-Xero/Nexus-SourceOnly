@@ -48,6 +48,16 @@ bool ANexusGameState::IsGameOver()
 	return bGameOver;
 }
 
+bool ANexusGameState::IsEasterEggActive()
+{
+	return bEasterEggActive;
+}
+
+void ANexusGameState::ActivateEasterEgg()
+{
+	bEasterEggActive = true;
+}
+
 ANexusBackgroundMusicPlayer* ANexusGameState::GetMusicPlayer()
 {
 	return GameMusicPlayer;

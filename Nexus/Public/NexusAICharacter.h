@@ -35,6 +35,12 @@ protected:
 	UAIPerceptionComponent* PerceptionComponent;
 
 	/**
+	 * \brief Visible mesh component for a easter egg.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* EasterEggMeshComponent;
+
+	/**
 	 * \brief The amount of points scored when this enemy is killed.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy")

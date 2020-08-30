@@ -53,7 +53,7 @@ protected:
 	/**
 	 * \brief SFX played when the power up is collected.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	UPROPERTY(EditInstanceOnly, Category = "PickupActor")
 	USoundBase* PowerUpCollectedSFX;
 	
 	/**

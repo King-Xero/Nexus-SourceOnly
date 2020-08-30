@@ -231,8 +231,6 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 						LogArgs.Add(FStringFormatArg(10));
 						LogArgs.Add(FStringFormatArg(InstigatingPlayerState->GetScore()));
 						FNexusLogging::Log(ELogLevel::TRACE, FString::Format(TEXT("{0} killed {1}. {2} points awarded. Total score: {3}."), LogArgs));
-
-						// ToDo Add an interface to pawns that has the amounts of points that they are worth.
 					}
 
 					// "Slow time"
