@@ -20,6 +20,19 @@ void ANexusPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	APlayerController* PlayerController = GetController<APlayerController>();
+
+	// Find the game over view target actor.
+	AActor* GameOverViewTarget = UGameplayStatics::GetActorOfClass(this, GameOverViewTargetClass);
+
+	if (PlayerController && GameOverViewTarget)
+	{
+		// Change the players camera view to that of the GameOverViewTarget actor.
+		PlayerController->SetViewTarget(GameOverViewTarget);
+		// Blend into the player camera view.
+		PlayerController->SetViewTargetWithBlend(this, GameOverViewBlendTime, EViewTargetBlendFunction::VTBlend_Cubic);
+	}
+	
 	if (HUDWidgetClass)
 	{
 		// Create the player's HUD.
