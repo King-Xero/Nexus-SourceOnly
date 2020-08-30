@@ -78,6 +78,13 @@ public:
 	bool IsNewHighScore();
 
 	/**
+	 * \brief Check if game is over.
+	 * \return bGameOver
+	 */
+	UFUNCTION(BlueprintCallable)
+	bool IsGameOver();
+
+	/**
 	 * \brief Get the game music player.
 	 * \return Music player.
 	 */

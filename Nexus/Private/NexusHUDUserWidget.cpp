@@ -147,18 +147,22 @@ void UNexusHUDUserWidget::SetWaveStateAndPublishChange(EWaveState OldState, EWav
 	OldWaveState = OldState;
 	NewWaveState = NewState;
 
-	const FString WaveNotificationText = GetWaveNotificationText(OldState, NewState);
+	auto GameState = GetWorld()->GetGameState<ANexusGameState>();
+	if (GameState && !GameState->IsGameOver())
+	{
+		const FString WaveNotificationText = GetWaveNotificationText(OldState, NewState);
 
-	if(!WaveNotificationText.IsEmpty())
-	{
-		PublishWaveStateNotification(WaveNotificationText);
-	}
-	
-	USoundCue* WaveAnnouncementSFX = GetWaveAnnouncementSFX(NewState);
-	if (WaveAnnouncementSFX)
-	{
-		PlaySound(WaveAnnouncementSFX);
-	}
+		if (!WaveNotificationText.IsEmpty())
+		{
+			PublishWaveStateNotification(WaveNotificationText);
+		}
+
+		USoundCue* WaveAnnouncementSFX = GetWaveAnnouncementSFX(NewState);
+		if (WaveAnnouncementSFX)
+		{
+			PlaySound(WaveAnnouncementSFX);
+		}
+	}	
 }
 
 void UNexusHUDUserWidget::SetWaveNumberAndPublishChange(int WaveNumber)

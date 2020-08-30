@@ -43,6 +43,11 @@ bool ANexusGameState::IsNewHighScore()
 	return bNewHighScore;
 }
 
+bool ANexusGameState::IsGameOver()
+{
+	return bGameOver;
+}
+
 ANexusBackgroundMusicPlayer* ANexusGameState::GetMusicPlayer()
 {
 	return GameMusicPlayer;
@@ -160,6 +165,8 @@ void ANexusGameState::MulticastOnGameOver_Implementation()
 {
 	if (!bGameOver)
 	{
+		bGameOver = true;
+		
 		// Save player score.
 		SavePlayerScore();
 
@@ -167,7 +174,5 @@ void ANexusGameState::MulticastOnGameOver_Implementation()
 		UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
 
 		GameOverWidget->AddToViewport();
-
-		bGameOver = true;
 	}	
 }
