@@ -20,6 +20,11 @@ void ANexusAICharacter::StopShooting()
 	}
 }
 
+float ANexusAICharacter::GetScoreValue() const
+{
+	return ScoreValue;
+}
+
 void ANexusAICharacter::BeginPlay()
 {
 	Super::BeginPlay();

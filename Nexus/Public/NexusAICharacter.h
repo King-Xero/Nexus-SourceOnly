@@ -17,6 +17,12 @@ public:
 	ANexusAICharacter();
 
 	virtual void StopShooting() override;
+
+	/**
+	 * \brief Get the score value for killing this enemy.
+	 * \return Score value.
+	 */
+	float GetScoreValue() const;
 	
 protected:
 
@@ -28,6 +34,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAIPerceptionComponent* PerceptionComponent;
 
+	/**
+	 * \brief The amount of points scored when this enemy is killed.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy")
+	float ScoreValue;
+	
 	/**
 	 * \brief Meshes that can be used for this character.
 	 */

@@ -7,6 +7,7 @@
 #include "NexusGameState.h"
 #include "NexusPlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "NexusAICharacter.h"
 
 ANexusGameModeBase::ANexusGameModeBase()
 {
@@ -210,13 +211,19 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 			if (InstigatingController)
 			{
 				APawn* InstigatingPawn = InstigatingController->GetPawn();
+				
 				if (InstigatingPawn)
 				{
 					ANexusPlayerState* InstigatingPlayerState = InstigatingPawn->GetPlayerStateChecked<ANexusPlayerState>();
 					if (InstigatingPlayerState)
 					{
-						// Award instigating player points.
-						InstigatingPlayerState->AddScore(10);
+						ANexusAICharacter* AICharacter = Cast<ANexusAICharacter>(KilledActor);
+
+						if(AICharacter)
+						{
+							// Award instigating player points.
+							InstigatingPlayerState->AddScore(AICharacter->GetScoreValue());
+						}						
 
 						FStringFormatOrderedArguments LogArgs;
 						LogArgs.Add(FStringFormatArg(InstigatingPawn->GetName()));
