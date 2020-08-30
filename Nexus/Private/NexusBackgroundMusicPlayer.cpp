@@ -28,7 +28,7 @@ void ANexusBackgroundMusicPlayer::PlayRandomTrackFromList()
 void ANexusBackgroundMusicPlayer::PlayTrack(USoundCue* TrackToPlay)
 {
 	AudioComponent->SetSound(TrackToPlay);
-	AudioComponent->FadeIn(FadeInTime, 1.0f);
+	AudioComponent->FadeIn(FadeInTime, TrackToPlay->GetVolumeMultiplier());
 }
 
 void ANexusBackgroundMusicPlayer::StopMusic()

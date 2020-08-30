@@ -138,20 +138,20 @@ void ANexusGameState::SetMusicForWaveState(EWaveState WaveState) const
 	{
 		switch (WaveState)
 		{
-		case EWaveState::WaveInProgress:
-			GameMusicPlayer->PlayRandomTrackFromList();
-			break;	
-		case EWaveState::WaveComplete:
-			GameMusicPlayer->StopMusic();
-			break;
-		case EWaveState::GameOver:
-			GameMusicPlayer->StopMusic();
-			break;
-		case EWaveState::PreparingNextWave:
-		case EWaveState::WaitingToComplete:
-		case EWaveState::Unknown:
-		default:
-			break;
+			case EWaveState::PreparingNextWave:
+				GameMusicPlayer->PlayRandomTrackFromList();
+				break;	
+			case EWaveState::WaveComplete:
+				GameMusicPlayer->StopMusic();
+				break;
+			case EWaveState::GameOver:
+				GameMusicPlayer->StopMusic();
+				break;
+			case EWaveState::WaveInProgress:
+			case EWaveState::WaitingToComplete:
+			case EWaveState::Unknown:
+			default:
+				break;
 		}
 	}
 }
