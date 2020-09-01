@@ -35,6 +35,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Music Player")
 	void StopMusic();
+
+	/**
+	 * \brief Lower the volume of currently playing music to defined value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Music Player")
+	void FadeToLowVolume();
 	
 protected:
 	// Called when the game starts or when spawned
@@ -57,6 +63,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Music Player")
 	float FadeOutTime;
+
+	/**
+	 * \brief Volume to fade to when FadeToLowVolume is called.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Music Player")
+	float LowFadeVolume;
 	
 	/**
 	 * \brief Music tracks to be played.

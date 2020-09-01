@@ -157,7 +157,7 @@ void ANexusGameState::SetMusicForWaveState(EWaveState WaveState) const
 				GameMusicPlayer->PlayRandomTrackFromList();
 				break;	
 			case EWaveState::WaveComplete:
-				GameMusicPlayer->StopMusic();
+				GameMusicPlayer->FadeToLowVolume();
 				break;
 			case EWaveState::GameOver:
 				GameMusicPlayer->StopMusic();

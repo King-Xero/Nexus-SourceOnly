@@ -36,6 +36,11 @@ void ANexusBackgroundMusicPlayer::StopMusic()
 	AudioComponent->FadeOut(FadeOutTime, 0.0f);
 }
 
+void ANexusBackgroundMusicPlayer::FadeToLowVolume()
+{
+	AudioComponent->AdjustVolume(FadeOutTime, LowFadeVolume);
+}
+
 // Called when the game starts or when spawned
 void ANexusBackgroundMusicPlayer::BeginPlay()
 {
