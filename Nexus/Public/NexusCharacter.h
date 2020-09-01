@@ -180,11 +180,13 @@ protected:
 	/**
 	 * \brief Make the character start "aiming down sight".
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	void StartADS();
 
 	/**
 	 * \brief Make the character stop "aiming down sight".
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	void EndADS();
 
 	/**
