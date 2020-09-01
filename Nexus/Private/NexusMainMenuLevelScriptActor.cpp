@@ -13,13 +13,16 @@ void ANexusMainMenuLevelScriptActor::BeginPlay()
 	if (!ExistingSaveGame)
 	{
 		UNexusSaveGame* NewSaveGame = Cast<UNexusSaveGame>(UGameplayStatics::CreateSaveGameObject(UNexusSaveGame::StaticClass()));
-		for (int i = 0; i < 10; ++i)
-		{
-			//ToDo pre-populate game save with more interesting score entries.
-			FNexusPlayerScoreStruct HighScore("Bob", 100);
-			
-			NewSaveGame->HighScores.Add(HighScore);
-		}
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Toyan", 25000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Ben Richards", 24000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Dutch", 23000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("John Matrix", 22000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("T-800", 21000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Jack Slater", 20000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Harry Tasker", 19000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("John Kimble", 18000));		
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Douglas Quaid", 17000));		
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Victor Fries", 16000));
 
 		UGameplayStatics::SaveGameToSlot(NewSaveGame, GameSaveSlotName, 0);
 	}
