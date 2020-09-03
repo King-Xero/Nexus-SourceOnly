@@ -9,11 +9,11 @@ void ANexusMainMenuLevelScriptActor::BeginPlay()
 {
 	UNexusSaveGame* ExistingSaveGame = Cast<UNexusSaveGame>(UGameplayStatics::LoadGameFromSlot(GameSaveSlotName, 0));
 
-	// If existing save file is not found, we should create one and populate with some "fake" high scores.
+	// If existing save file is not found, we should create one and populate it with a list of high scores.
 	if (!ExistingSaveGame)
 	{
 		UNexusSaveGame* NewSaveGame = Cast<UNexusSaveGame>(UGameplayStatics::CreateSaveGameObject(UNexusSaveGame::StaticClass()));
-		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Toyan", 25000));
+		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Toyan Green", 25000));
 		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Ben Richards", 24000));
 		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("Dutch", 23000));
 		NewSaveGame->HighScores.Add(FNexusPlayerScoreStruct("John Matrix", 22000));

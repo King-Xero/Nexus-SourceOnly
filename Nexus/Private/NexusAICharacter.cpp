@@ -59,6 +59,7 @@ void ANexusAICharacter::BeginPlay()
 		const int RandomHairMaterialIndex = FMath::RandRange(0, HairMaterials.Num() - 1);
 		UMaterialInstance* HairMaterial = HairMaterials[RandomHairMaterialIndex];
 
+		// If hair meshes are assigned then hair can be randomized.
 		if (HairMeshes.Num())
 		{
 			const int RandomCharacterHairMeshIndex = FMath::RandRange(0, HairMeshes.Num() - 1);
@@ -72,6 +73,7 @@ void ANexusAICharacter::BeginPlay()
 				}
 			}
 		}
+		// If beard meshes are assigned then facial hair can be randomized.
 		if (BeardMeshes.Num())
 		{
 			const int RandomCharacterBeardMeshIndex = FMath::RandRange(0, BeardMeshes.Num() - 1);

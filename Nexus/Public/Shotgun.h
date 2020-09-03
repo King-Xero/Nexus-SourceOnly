@@ -20,7 +20,7 @@ public:
 	 * \brief Start shooting the weapon.
 	 */
 	virtual void StartFiring() override;
-
+	
 protected:
 
 	/**

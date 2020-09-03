@@ -8,6 +8,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Nexus/Utils/Logging/NexusLogging.h"
 #include "NexusCharacter.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "DrawDebugHelpers.h"
+#include "Nexus/Utils/ConsoleVariables.h"
+#endif
 
 // Sets default values
 ANexusWeapon::ANexusWeapon()
@@ -196,6 +201,68 @@ bool ANexusWeapon::CanFireWeapon() const
 bool ANexusWeapon::HasAmmoInClip() const
 {
 	return 0 < CurrentAmmoInClip;
+}
+
+void ANexusWeapon::LineTraceForDamageAndImpactEffects(AActor* WeaponOwner, FVector& BulletTracerTargetOut, EPhysicalSurface& SurfaceTypeOut)
+{
+	// Start location for line trace.
+	FVector EyeLocation;
+	FRotator EyeRotation;
+
+	WeaponOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+
+	// Add "bullet spread" to shot direction. Shots are/can be more accurate while aiming down sights.
+	const float HalfAngleRad = OwningCharacter && OwningCharacter->IsAimingDownSights() ? FMath::DegreesToRadians(ADSBulletSpreadAngle)
+		: FMath::DegreesToRadians(BulletSpreadAngle);
+	FVector ShotDirection = FMath::VRandCone(EyeRotation.Vector(), HalfAngleRad);
+
+	// End location for eye trace.
+	FVector TraceEnd = EyeLocation + (ShotDirection * WeaponRange);
+
+	FCollisionQueryParams CollisionQueryParams;
+	// Ignore collisions with the weapon owner.
+	CollisionQueryParams.AddIgnoredActor(WeaponOwner);
+	// Ignore collisions with the weapon itself.
+	CollisionQueryParams.AddIgnoredActor(this);
+	// Complex collision is more expensive, but we get exact location of where was hit.
+	CollisionQueryParams.bTraceComplex = true;
+	// Ensure that the surface material is returned to check what body part was hit.
+	CollisionQueryParams.bReturnPhysicalMaterial = true;
+
+	BulletTracerTargetOut = TraceEnd;
+
+	SurfaceTypeOut = SurfaceType_Default;
+
+	FHitResult WeaponHitResult;
+	// Trace the world between the start and end locations. Returns true if blocking hit.
+	if (GetWorld()->LineTraceSingleByChannel(WeaponHitResult, EyeLocation, TraceEnd, COLLISION_TRACE_WEAPON, CollisionQueryParams))
+	{
+		AActor* HitActor = WeaponHitResult.GetActor();
+
+		// Get the surface type that was hit.
+		SurfaceTypeOut = UPhysicalMaterial::DetermineSurfaceType(WeaponHitResult.PhysMaterial.Get());
+
+		// Calculate the amount of damage to inflict.
+		float DamageToInflict = WeaponDamage * GetDamageMultiplier(SurfaceTypeOut);
+
+		// Apply damage to the hit actor.
+		UGameplayStatics::ApplyPointDamage(HitActor, DamageToInflict, ShotDirection, WeaponHitResult,
+			WeaponOwner->GetInstigatorController(), this, DamageType);
+
+		// Play weapon impact effects locally.
+		PlayWeaponImpactEffects(SurfaceTypeOut, WeaponHitResult.ImpactPoint);
+
+		// If the shot hit something, the bullet tracer target should be updated.
+		BulletTracerTargetOut = WeaponHitResult.ImpactPoint;
+	}
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	const bool bDrawDebug = CVarDebugWeaponDrawing.GetValueOnGameThread();
+	if (bDrawDebug)
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+	}
+#endif
 }
 
 void ANexusWeapon::ServerFire_Implementation()

@@ -174,6 +174,14 @@ protected:
 	 * \return Has ammo - true, No ammo - false.
 	 */
 	bool HasAmmoInClip() const;
+
+	/**
+	 * \brief Fire a line trace to apply damage and play effects on anything hit.
+	 * \param WeaponOwner The owner that fired the weapon. Used to apply damage.
+	 * \param BulletTracerTargetOut Location of the hit, or the end of the line trace.
+	 * \param SurfaceTypeOut The type of surface that was hit. Used to determine damage multipliers and effects to be played.
+	 */
+	void LineTraceForDamageAndImpactEffects(AActor* WeaponOwner, FVector& BulletTracerTargetOut, EPhysicalSurface& SurfaceTypeOut);
 	
 	/**
 	 * \brief Shoot the weapon.

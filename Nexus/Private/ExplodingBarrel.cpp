@@ -99,7 +99,8 @@ void AExplodingBarrel::Explode()
 	AController* InstigatorController = ExplosionInstigator ? ExplosionInstigator->GetInstigatorController() : nullptr;
 	
 	// Apply damage to actors around the barrel.
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(), ExplosionRadius, BarrelDamageType, {}, this, InstigatorController);
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), ExplosionDamage, GetActorLocation(),
+		ExplosionRadius, BarrelDamageType, {}, this, InstigatorController);
 	
 	// Launch barrel upwards.
 	MeshComponent->AddImpulse(FVector::UpVector * VerticalImpulseStrength, NAME_None, true);

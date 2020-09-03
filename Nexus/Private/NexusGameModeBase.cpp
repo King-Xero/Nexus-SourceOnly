@@ -186,10 +186,6 @@ void ANexusGameModeBase::EnemySpawnerElapsed()
 
 void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* InstigatingController, AActor* DeathCauser)
 {
-	// When an actor is killed, check if players and enemies are alive.
-	CheckPlayersAlive();
-	CheckEnemiesAlive();
-	
 	APawn* KilledPawn = Cast<APawn>(KilledActor);
 		
 	if (KilledPawn)
@@ -204,9 +200,6 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 		{
 			// Reduce current enemies spawned count.
 			--CurrentlySpawnedEnemies;
-			
-			// An enemy was killed, so we should check if there are any still alive.
-			CheckEnemiesAlive();
 			
 			if (InstigatingController)
 			{
@@ -228,7 +221,7 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 						FStringFormatOrderedArguments LogArgs;
 						LogArgs.Add(FStringFormatArg(InstigatingPawn->GetName()));
 						LogArgs.Add(FStringFormatArg(KilledPawn->GetName()));
-						LogArgs.Add(FStringFormatArg(10));
+						LogArgs.Add(FStringFormatArg(AICharacter->GetScoreValue()));
 						LogArgs.Add(FStringFormatArg(InstigatingPlayerState->GetScore()));
 						FNexusLogging::Log(ELogLevel::TRACE, FString::Format(TEXT("{0} killed {1}. {2} points awarded. Total score: {3}."), LogArgs));
 					}
@@ -243,6 +236,9 @@ void ANexusGameModeBase::ActorKilled(AActor* KilledActor, AController* Instigati
 					}
 				}
 			}
+			
+			// An enemy was killed, so we should check if there are any still alive.
+			CheckEnemiesAlive();
 		}		
 	}
 }
