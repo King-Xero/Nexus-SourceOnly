@@ -47,4 +47,16 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	float GameOverViewBlendTime;
+
+private:
+
+	/**
+	 * \brief Called after the camera fades in to enable player input and add the hud to the screen.
+	 */
+	void DelayedPlayerStart();
+	
+	/**
+	 * \brief Handle used to manage the timer that delays player input and the HUD.
+	 */
+	FTimerHandle TimerHandle_PlayerStart;
 };
