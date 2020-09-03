@@ -42,7 +42,6 @@ protected:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Explode();
-
 	/**
 	 * \brief Replicate barrel explosion effects.
 	 */
@@ -72,6 +71,12 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel")
 	UParticleSystem* ExplosionVFX;
+
+	/**
+	 * \brief Camera shake triggered when the barrel explodes.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel")
+	TSubclassOf<UCameraShake> ExplosionCameraShake;
 
 	/**
 	 * \brief The material that should be applied to the barrel when it explodes.
@@ -132,6 +137,11 @@ private:
 	 * \brief Spawn sound effect for explosion.
 	 */
 	void PlayExplosionSFX() const;
+
+	/**
+	 * \brief Play a camera shake for nearby players.
+	 */
+	void PlayCameraShake() const;
 
 	/**
 	 * \brief Swap the mesh material to the exploded material.

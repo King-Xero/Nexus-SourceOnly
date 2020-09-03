@@ -117,6 +117,9 @@ void AExplodingBarrel::OnRep_Explode() const
 	// Spawn sound effect for explosion.
 	PlayExplosionSFX();
 
+	// Play camera shake effect for nearby players.
+	PlayCameraShake();
+	
 	// Change the material on the barrel.
 	SetExplodedMaterial();
 
@@ -142,6 +145,14 @@ void AExplodingBarrel::PlayExplosionSFX() const
 	if (ExplosionSFX)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSFX, GetActorLocation());
+	}
+}
+
+void AExplodingBarrel::PlayCameraShake() const
+{
+	if (ExplosionCameraShake)
+	{
+		UGameplayStatics::PlayWorldCameraShake(GetWorld(), ExplosionCameraShake, GetActorLocation(), 0, ExplosionRadius * 5);
 	}
 }
 
