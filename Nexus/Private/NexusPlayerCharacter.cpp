@@ -6,6 +6,7 @@
 #include "NexusGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "NexusPlayerState.h"
+#include "BulletDamageType.h"
 
 void ANexusPlayerCharacter::SwapWeapon()
 {
@@ -96,6 +97,13 @@ void ANexusPlayerCharacter::HealthChanged(UNexusHealthComponent* HealthComponent
 		// Stop the player from being destroyed so that camera doesn't shift.
 		SetLifeSpan(0);
 	}
+	else
+	{
+		if (DamageType->IsA(UBulletDamageType::StaticClass()))
+		{
+			PlayFlinchCameraShake();
+		}
+	}
 }
 
 void ANexusPlayerCharacter::DelayedPlayerStart()
@@ -111,5 +119,17 @@ void ANexusPlayerCharacter::DelayedPlayerStart()
 	{
 		// Add the HUD to the players screen.
 		CurrentHUDWidget->AddToViewport();
+	}
+}
+
+void ANexusPlayerCharacter::PlayFlinchCameraShake()
+{
+	if(FlinchCameraShake)
+	{
+		APlayerController* PlayerController = GetController<APlayerController>();
+		if (PlayerController)
+		{
+			PlayerController->ClientPlayCameraShake(FlinchCameraShake);
+		}
 	}
 }
