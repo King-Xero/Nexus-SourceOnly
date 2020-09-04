@@ -486,6 +486,22 @@ void ANexusCharacter::MulticastPlayAnimationMontage_Implementation(UAnimMontage*
 	PlayAnimMontage(AnimMontage, PlaybackRate);
 }
 
+void ANexusCharacter::PlayHurtSFX() const
+{
+	if (HurtSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(HurtSFX, GetMesh());
+	}
+}
+
+void ANexusCharacter::PlayDeathSFX() const
+{
+	if (DeathSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(DeathSFX, GetMesh());
+	}
+}
+
 void ANexusCharacter::SetAimDownSight(float DeltaTime)
 {
 	// Interpolate the aim down sight for a smooth aim in/out.
@@ -519,22 +535,6 @@ void ANexusCharacter::PlayCrouchSFX() const
 	if (CrouchSFX)
 	{
 		UGameplayStatics::SpawnSoundAttached(CrouchSFX, GetMesh());
-	}
-}
-
-void ANexusCharacter::PlayHurtSFX() const
-{
-	if (HurtSFX)
-	{
-		UGameplayStatics::SpawnSoundAttached(HurtSFX, GetMesh());
-	}
-}
-
-void ANexusCharacter::PlayDeathSFX() const
-{
-	if (DeathSFX)
-	{
-		UGameplayStatics::SpawnSoundAttached(DeathSFX, GetMesh());
 	}
 }
 

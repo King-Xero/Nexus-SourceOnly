@@ -87,4 +87,21 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy")
 	TArray<UMaterialInstance*> MaskMaterials;
+
+	/**
+	 * \brief Sound effect spawned at the character's location when they are hurt and the easter egg is active.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* EasterEggHurtSFX;
+	
+	/**
+	 * \brief Sound effect spawned at the character's location when they die and the easter egg is active.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* EasterEggDeathSFX;
+
+private:
+	
+	virtual void PlayHurtSFX() const override;
+	virtual void PlayDeathSFX() const override;
 };

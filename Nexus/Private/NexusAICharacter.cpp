@@ -3,6 +3,8 @@
 
 #include "NexusAICharacter.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "NexusGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 ANexusAICharacter::ANexusAICharacter()
 	: ANexusCharacter()
@@ -107,5 +109,51 @@ void ANexusAICharacter::BeginPlay()
 				GetMesh()->SetMaterial(0, MaskMaterial);
 			}
 		}
+	}
+
+	ANexusGameState* GameState = GetWorld()->GetGameState<ANexusGameState>();
+	if (GameState)
+	{
+		EasterEggMeshComponent->SetVisibility(GameState->IsEasterEggActive());
+	}
+}
+
+void ANexusAICharacter::PlayHurtSFX() const
+{
+	bool bEasterEggActive = false;
+	
+	ANexusGameState* GameState = GetWorld()->GetGameState<ANexusGameState>();
+	if(GameState)
+	{
+		bEasterEggActive = GameState->IsEasterEggActive();
+	}
+
+	if (bEasterEggActive && EasterEggHurtSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(EasterEggHurtSFX, GetMesh());
+	}
+	else
+	{
+		Super::PlayHurtSFX();
+	}
+}
+
+void ANexusAICharacter::PlayDeathSFX() const
+{
+	bool bEasterEggActive = false;
+
+	ANexusGameState* GameState = GetWorld()->GetGameState<ANexusGameState>();
+	if (GameState)
+	{
+		bEasterEggActive = GameState->IsEasterEggActive();
+	}
+
+	if (bEasterEggActive && EasterEggDeathSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(EasterEggDeathSFX, GetMesh());
+	}
+	else
+	{
+		Super::PlayDeathSFX();
 	}
 }

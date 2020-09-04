@@ -240,6 +240,16 @@ protected:
 	void MulticastPlayAnimationMontage(UAnimMontage* AnimMontage, float PlaybackRate = 1.0f);
 
 	/**
+	 * \brief Spawn sound effect for when character is hurt.
+	 */
+	virtual void PlayHurtSFX() const;
+
+	/**
+	 * \brief Spawn sound effect for character dying.
+	 */
+	virtual void PlayDeathSFX() const;
+
+	/**
 	 * \brief Third person camera component
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -431,16 +441,6 @@ private:
 	 * \brief Spawn sound effect for character crouching.
 	 */
 	void PlayCrouchSFX() const;
-
-	/**
-	 * \brief Spawn sound effect for when character is hurt.
-	 */
-	void PlayHurtSFX() const;
-	
-	/**
-	 * \brief Spawn sound effect for character dying.
-	 */
-	void PlayDeathSFX() const;
 
 	/**
 	 * \brief Play random death animation from available animations.
