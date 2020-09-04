@@ -428,6 +428,7 @@ void ANexusCharacter::HealthChanged(UNexusHealthComponent* HealthComponent, floa
 		if (DamageType->IsA(UBulletDamageType::StaticClass()))
 		{
 			PlayHitAnimation();
+			PlayHurtSFX();
 		}
 	}
 }
@@ -480,6 +481,14 @@ void ANexusCharacter::PlayCrouchSFX() const
 	if (CrouchSFX)
 	{
 		UGameplayStatics::SpawnSoundAttached(CrouchSFX, GetMesh());
+	}
+}
+
+void ANexusCharacter::PlayHurtSFX() const
+{
+	if (HurtSFX)
+	{
+		UGameplayStatics::SpawnSoundAttached(HurtSFX, GetMesh());
 	}
 }
 

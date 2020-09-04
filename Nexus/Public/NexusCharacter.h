@@ -316,6 +316,12 @@ protected:
 	USoundBase* CrouchSFX;
 
 	/**
+	 * \brief Sound effect spawned at the character's location when they are hurt.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	USoundBase* HurtSFX;
+	
+	/**
 	 * \brief Sound effect spawned at the character's location when they die.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
@@ -400,6 +406,11 @@ private:
 	 */
 	void PlayCrouchSFX() const;
 
+	/**
+	 * \brief Spawn sound effect for when character is hurt.
+	 */
+	void PlayHurtSFX() const;
+	
 	/**
 	 * \brief Spawn sound effect for character dying.
 	 */
