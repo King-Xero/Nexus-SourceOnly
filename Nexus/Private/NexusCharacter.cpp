@@ -149,6 +149,32 @@ float ANexusCharacter::GetAimYaw() const
 	return AimYawAngle;
 }
 
+bool ANexusCharacter::IsLeftHandHoldingWeapon() const
+{
+	bool bUseIK = false;
+
+	if (CurrentWeapon)
+	{
+		const EWeaponState CurrentWeaponState = CurrentWeapon->GetWeaponState();
+		
+		bUseIK = EWeaponState::Idle == CurrentWeaponState || EWeaponState::Firing == CurrentWeaponState;
+	}
+	
+	return bUseIK;
+}
+
+FTransform ANexusCharacter::GetLeftHandWeaponIKSocketTransform() const
+{
+	FTransform SocketTransform;
+
+	if (CurrentWeapon)
+	{
+		SocketTransform = CurrentWeapon->GetIKSocketTransform();
+	}
+
+	return SocketTransform;
+}
+
 float ANexusCharacter::GetMaxWalkSpeed()
 {
 	return DefaultMaxWalkSpeed;

@@ -66,6 +66,18 @@ public:
 	float GetAimYaw() const;
 
 	/**
+	 * \brief Check if the character's left hand should be using IK.
+	 * \return true - use IK, false - no IK.
+	 */
+	bool IsLeftHandHoldingWeapon() const;
+
+	/**
+	 * \brief Get the transform of the IK socket from the current weapon.
+	 * \return IK socket transform.
+	 */
+	FTransform GetLeftHandWeaponIKSocketTransform() const;
+
+	/**
 	 * \brief Get the maximum walking speed for the character.
 	 * \return DefaultMaxWalkSpeed.
 	 */

@@ -146,6 +146,16 @@ FName ANexusWeapon::GetWeaponName() const
 	return WeaponName;
 }
 
+EWeaponState ANexusWeapon::GetWeaponState() const
+{
+	return CurrentWeaponState;
+}
+
+FTransform ANexusWeapon::GetIKSocketTransform() const
+{
+	return MeshComponent->GetSocketTransform(LeftHandIKSocketName);
+}
+
 bool ANexusWeapon::CanWeaponBeSwapped() const
 {
 	return EWeaponState::Swapping != CurrentWeaponState;

@@ -76,7 +76,7 @@ public:
 	/**
 	 * \brief Start shooting the weapon.
 	 */
-	virtual void StartFiring(){};
+	virtual void StartFiring() {}
 
 	/**
 	 * \brief Stop shooting the weapon.
@@ -136,6 +136,18 @@ public:
 	FName GetWeaponName() const;
 
 	/**
+	 * \brief Get the current weapon state.
+	 * \return CurrentWeaponState
+	 */
+	EWeaponState GetWeaponState() const;
+
+	/**
+	 * \brief Get the transform of the IK socket for this weapon.
+	 * \return IK Socket transform.
+	 */
+	FTransform GetIKSocketTransform() const;
+
+	/**
 	 * \brief Check if the weapon can be swapped out.
 	 * \return 
 	 */
@@ -151,7 +163,7 @@ public:
 	 * \brief Restore weapon ammo.
 	 */
 	virtual void RestoreAmmo(int32 AmmoAmount);
-
+	
 	/**
 	 * \brief Event used to broadcast ammo updates.
 	 */
@@ -560,4 +572,9 @@ protected:
 	 * \brief The time delay between weapon shots. (Calculated using WeaponRateOfFire)
 	 */
 	float WeaponFireDelayTime;
+
+	/**
+	 * \brief Name of the weapon IK socket.
+	 */
+	const FName LeftHandIKSocketName = "LeftHandIKSocket";
 };

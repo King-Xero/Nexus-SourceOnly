@@ -11,6 +11,7 @@ UNexusCharacterAnimInstance::UNexusCharacterAnimInstance()
 	, bCrouching(false)
 	, Speed(0.0f)
 	, Direction(0.0f)
+	, bLeftHandHoldingWeapon(false)
 {
 }
 
@@ -42,6 +43,8 @@ void UNexusCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			bAimingDownSights = cPlayerCharacter->IsAimingDownSights();
 			AimPitch = cPlayerCharacter->GetAimPitch();
 			AimYaw = cPlayerCharacter->GetAimYaw();
+			bLeftHandHoldingWeapon = cPlayerCharacter->IsLeftHandHoldingWeapon();
+			LeftHandWeaponIKSocketTransform = cPlayerCharacter->GetLeftHandWeaponIKSocketTransform();
 		}
 	}
 }

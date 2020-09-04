@@ -78,6 +78,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	float AimYaw;
 
+	/**
+	 * \brief Used to track if the character left hand should be use IK.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bLeftHandHoldingWeapon;
+
+	/**
+	 * \brief Transform of the left hand socket used for IK.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	FTransform LeftHandWeaponIKSocketTransform;
+
 private:
 	
 	/**
