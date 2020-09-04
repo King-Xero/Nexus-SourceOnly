@@ -149,6 +149,16 @@ float ANexusCharacter::GetAimYaw() const
 	return AimYawAngle;
 }
 
+float ANexusCharacter::GetMaxWalkSpeed()
+{
+	return DefaultMaxWalkSpeed;
+}
+
+float ANexusCharacter::GetMaxCrouchSpeed()
+{
+	return DefaultMaxCrouchSpeed;
+}
+
 void ANexusCharacter::StartShooting()
 {
 	if (CurrentWeapon)
@@ -294,8 +304,10 @@ void ANexusCharacter::BeginPlay()
 	// Cache FOV so that we can reset when we stop ADS.
 	DefaultFOV = CameraComponent->FieldOfView;
 
-	// Cache max walk speed so we can reset when we stop ADS.
+	// Cache max walk speed so we can reset when we stop ADS or speed boost.
 	DefaultMaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	// Cache max crouch speed so we can reset when we stop  speed boost.
+	DefaultMaxCrouchSpeed = GetCharacterMovement()->MaxWalkSpeedCrouched;
 
 	SpawnAndAttachStartingWeapons();
 	

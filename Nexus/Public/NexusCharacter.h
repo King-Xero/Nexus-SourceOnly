@@ -66,6 +66,20 @@ public:
 	float GetAimYaw() const;
 
 	/**
+	 * \brief Get the maximum walking speed for the character.
+	 * \return DefaultMaxWalkSpeed.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	float GetMaxWalkSpeed();
+
+	/**
+	 * \brief Get the maximum crouching speed for the character.
+	 * \return DefaultMaxCrouchSpeed.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	float GetMaxCrouchSpeed();
+
+	/**
 	 * \brief Make the character start firing the currently equipped weapon.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Player")
@@ -484,6 +498,11 @@ private:
 	 * \brief Default maximum walk speed, cached on begin play.
 	 */
 	float DefaultMaxWalkSpeed;
+
+	/**
+	 * \brief Default maximum crouch speed, cached on begin play.
+	 */
+	float DefaultMaxCrouchSpeed;
 		
 	/**
 	 * \brief Name used for move forward input binding.
