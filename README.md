@@ -1,2 +1,2 @@
-# Nexus-SourceOnly
-Source code only clone of Nexus project
+# Nexus
+3rd person survival arena shooter game, built with Unreal Engine and C++
